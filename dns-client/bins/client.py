@@ -20,11 +20,16 @@ class DNSOverHTTPSClient:
         }
         if self.auth_token:
             headers["Authorization"] = f"Bearer {self.auth_token}"
-        response = requests.get(self.dns_server_url, headers=headers, params=params)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            response.raise_for_status()
+        try:
+            response = requests.get(self.dns_server_url, headers=headers, params=params)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+       
 
 def main(argv):
     domain = ''

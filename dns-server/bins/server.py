@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import socketserver
 import requests
 import http.server
@@ -20,26 +21,31 @@ ALLOWED_DOMAINS = []
 
 class DNSHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        global AUTH_TOKEN, ALLOWED_DOMAINS
+        global AUTH_TOKEN, ALLOWED_DOMAINS, DB_TYPE, DB_URL
         token = self.headers.get('Authorization')
+        token = token.split('Bearer ')[-1] if token else None
         if AUTH_TOKEN and token != AUTH_TOKEN:
+            print(f"Invalid token: {token}")
             self.send_response(403)
             self.end_headers()
             return
 
         query = self.path.split('?name=')[-1]
-        if query:
-            if not self.is_valid_domain(query):
+        name = query.split('&')[0]
+        dnsType = query.split('&type=')[-1]
+        if name:
+            if not self.is_valid_domain(name):
+                print(f"Invalid domain: {name}")
                 self.send_response(400)
                 self.end_headers()
                 return
 
-            if AUTH_TOKEN and not any(query.endswith(domain) for domain in ALLOWED_DOMAINS):
+            if DB_TYPE and DB_URL and AUTH_TOKEN and not any(name.endswith(domain) for domain in ALLOWED_DOMAINS):
                 self.send_response(403)
                 self.end_headers()
                 return
-
-            response = self.resolve_dns(query)
+            print(f"Resolving {name} with type {dnsType}")
+            response = self.resolve_dns(name)
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
@@ -84,12 +90,12 @@ def get_token_from_db(db_type, db_url, domain="*"):
 def main(argv):
     global AUTH_TOKEN, PORT, KEY_FILE, CERT_FILE, DB_TYPE, DB_URL, ALLOWED_DOMAINS
     try:
-        opts, args = getopt.getopt(argv, "t:p:k:c:d:u:", ["token=", "port=", "key=", "cert=", "dbtype=", "dburl="])
+        opts, args = getopt.getopt(argv, "a:p:k:c:d:u:", ["auth=", "port=", "key=", "cert=", "dbtype=", "dburl="])
     except getopt.GetoptError:
-        print('server.py -t <token> -p <port> -k <keyfile> -c <certfile> -d <dbtype> -u <dburl>')
+        print('server.py -a <authtoken> -p <port> -k <keyfile> -c <certfile> -d <dbtype> -u <dburl>')
         sys.exit(2)
     for opt, arg in opts:
-        if opt in ("-t", "--token"):
+        if opt in ("-a", "--auth"):
             AUTH_TOKEN = arg
         elif opt in ("-p", "--port"):
             PORT = int(arg)
