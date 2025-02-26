@@ -1,3 +1,8 @@
+Credited contributor in the project README employers may utilize this project under the latest MIT license (https://opensource.org/license/mit) for any releases for non-direct revenue generating projects, internal usage. 
+Employers cannot build products on top of and then sell as a software service or bundle or directly resell this project.
+However on termination of the contributor, all future releases of this project will be under the AGPLv3 license spelled out below.
+Code owners offer a paid license option to reduce the code base to GPLv2.
+
 GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -658,3 +663,4 @@ specific requirements.
 if any, to sign a "copyright disclaimer" for the program, if necessary.
 For more information on this, and how to apply and follow the GNU AGPL, see
 <https://www.gnu.org/licenses/>.
+
