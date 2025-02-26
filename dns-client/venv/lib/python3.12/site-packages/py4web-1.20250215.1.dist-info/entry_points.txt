@@ -1,0 +1,2 @@
+[console_scripts]
+py4web = py4web.core:cli
