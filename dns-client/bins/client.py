@@ -35,43 +35,26 @@ class DNSOverHTTPSClient:
             sys.exit(1)
 
 class DNSForwarder:
-    """
-    A class to forward DNS requests over UDP and TCP.
-
-    Attributes:
-        dns_client: An instance of a DNS client to handle DNS queries.
-        udp_port (int): The port number for the UDP server. Default is 53.
-        tcp_port (int): The port number for the TCP server. Default is 53.
-
-    Methods:
-        start():
-            Starts both UDP and TCP servers in separate threads.
-        
-        start_udp_server():
-            Starts the UDP server to listen for DNS requests and send responses.
-        
-        start_tcp_server():
-            Starts the TCP server to listen for DNS requests and send responses.
-        
-        handle_request(data):
-            Handles the incoming DNS request, queries the DNS client, and returns the response.
-            Args:
-                data (bytes): The raw DNS request data.
-            Returns:
-                bytes: The raw DNS response data.
-    """
-    def __init__(self, dns_client, udp_port=53, tcp_port=53):
+    def __init__(self, dns_client, udp_port=53, tcp_port=53, listen_udp=False, listen_tcp=False):
         self.dns_client = dns_client
         self.udp_port = udp_port
         self.tcp_port = tcp_port
+        self.listen_udp = listen_udp
+        self.listen_tcp = listen_tcp
 
     def start(self):
-        udp_thread = threading.Thread(target=self.start_udp_server)
-        tcp_thread = threading.Thread(target=self.start_tcp_server)
-        udp_thread.start()
-        tcp_thread.start()
-        udp_thread.join()
-        tcp_thread.join()
+        threads = []
+        if self.listen_udp:
+            udp_thread = threading.Thread(target=self.start_udp_server)
+            threads.append(udp_thread)
+        if self.listen_tcp:
+            tcp_thread = threading.Thread(target=self.start_tcp_server)
+            threads.append(tcp_thread)
+        
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
 
     def start_udp_server(self):
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -95,11 +78,9 @@ class DNSForwarder:
             conn.close()
 
     def handle_request(self, data):
-        # This is a simplified example. You need to parse the DNS request properly.
         domain = "example.com"  # Extract the domain from the DNS request
         record_type = "A"  # Extract the record type from the DNS request
         result = self.dns_client.query(domain, record_type)
-        # Convert the result back to a DNS response format
         response = b""  # Create a proper DNS response
         return response
 
@@ -115,15 +96,17 @@ def main(argv):
     dns_server_url = "https://dns.google/resolve"
     auth_token = None
     config_file = None
+    listen_udp = False
+    listen_tcp = False
 
     try:
-        opts, args = getopt.getopt(argv, "hd:t:s:a:c:", ["domain=", "type=", "server=", "auth=", "config="])
+        opts, args = getopt.getopt(argv, "hd:t:s:a:c:uT", ["domain=", "type=", "server=", "auth=", "config=", "udp", "tcp"])
     except getopt.GetoptError:
-        logging.debug('client.py -d <domain> -t <record_type> -s <dns_server_url> -a <auth_token> -c <config_file>')
+        logging.debug('client.py -d <domain> -t <record_type> -s <dns_server_url> -a <auth_token> -c <config_file> [-u] [-T]')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            logging.debug('client.py -d <domain> -t <record_type> -s <dns_server_url> -a <auth_token> -c <config_file>')
+            logging.debug('client.py -d <domain> -t <record_type> -s <dns_server_url> -a <auth_token> -c <config_file> [-u] [-T]')
             sys.exit()
         elif opt in ("-d", "--domain"):
             domain = arg
@@ -135,6 +118,10 @@ def main(argv):
             auth_token = arg
         elif opt in ("-c", "--config"):
             config_file = arg
+        elif opt in ("-u", "--udp"):
+            listen_udp = True
+        elif opt in ("-T", "--tcp"):
+            listen_tcp = True
 
     if config_file:
         config = load_config(config_file)
@@ -151,7 +138,7 @@ def main(argv):
     result = client.query(domain, record_type)
     logging.debug(json.dumps(result, indent=4))
 
-    forwarder = DNSForwarder(client)
+    forwarder = DNSForwarder(client, listen_udp=listen_udp, listen_tcp=listen_tcp)
     forwarder.start()
 
 if __name__ == "__main__":
