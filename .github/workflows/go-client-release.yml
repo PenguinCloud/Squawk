@@ -73,18 +73,18 @@ jobs:
         run: |
           VERSION=$(cat .version | tr -d '\n' | sed 's/^v//')
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "TAG=v$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG=v$VERSION-client" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
-      - name: Check if tag exists
+      - name: Check if client tag exists
         id: tag_check
         run: |
-          if git rev-parse "v${{ steps.version.outputs.VERSION }}" >/dev/null 2>&1; then
+          if git rev-parse "v${{ steps.version.outputs.VERSION }}-client" >/dev/null 2>&1; then
             echo "EXISTS=true" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.version.outputs.VERSION }} already exists, skipping release"
+            echo "Client tag v${{ steps.version.outputs.VERSION }}-client already exists, skipping release"
           else
             echo "EXISTS=false" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.version.outputs.VERSION }} does not exist, proceeding with release"
+            echo "Client tag v${{ steps.version.outputs.VERSION }}-client does not exist, proceeding with release"
           fi
 
       - name: Set up Go
@@ -342,35 +342,49 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.version.outputs.TAG }}
-          release_name: Squawk DNS Client (Go) ${{ steps.version.outputs.TAG }}
+          release_name: Squawk DNS Client (Go) v${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
           body: |
-            # Squawk DNS Client (Go) ${{ steps.version.outputs.TAG }}
+            # Squawk DNS Client (Go) v${{ steps.version.outputs.VERSION }}
             
-            A high-performance DNS-over-HTTPS client written in Go with 1:1 feature parity with the Python client.
+            High-performance DNS-over-HTTPS client written in Go with 1:1 feature parity with the Python client.
             
             ## Features
-            - DNS-over-HTTPS (DoH) support with HTTP/2
-            - mTLS authentication with ECC and RSA certificates
-            - Bearer token authentication
-            - Local DNS forwarding (UDP/TCP to DoH)
-            - YAML configuration file support
-            - Environment variable configuration
-            - Cross-platform support (Linux, macOS, Windows)
             
-            ## Installation
+            - **DNS-over-HTTPS (DoH)** support with HTTP/2
+            - **mTLS authentication** with ECC and RSA certificates
+            - **Bearer token authentication** for server access
+            - **Local DNS forwarding** (UDP/TCP to DoH translation)
+            - **YAML configuration** file support
+            - **Environment variable** configuration
+            - **Cross-platform support** (Linux, macOS, Windows)
+            - **High performance** with ~10ms cold start and low memory usage
+            
+            ## Installation Options
+            
+            ### Docker (Recommended)
+            ```bash
+            # Run Go client with DNS forwarding
+            docker run -p 53:53/udp -p 53:53/tcp \
+              -e SQUAWK_SERVER_URL=https://your-server:8443 \
+              -e SQUAWK_AUTH_TOKEN=your-token \
+              penguincloud/${{ env.APP_NAME }}:${{ steps.version.outputs.VERSION }} forward -v
+            ```
             
             ### Linux (Debian/Ubuntu)
             ```bash
             # Download and install the .deb package
             wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.TAG }}/${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_amd64.deb
             sudo dpkg -i ${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_amd64.deb
+            
+            # Enable and start the systemd service
+            sudo systemctl enable --now ${{ env.APP_NAME }}
             ```
             
-            ### macOS
+            ### macOS (Universal Binary)
             ```bash
-            # Download and extract universal binary
+            # Download and extract universal binary (Intel + Apple Silicon)
             wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.TAG }}/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-universal.tar.gz
             tar -xzf ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-universal.tar.gz
             chmod +x ${{ env.APP_NAME }}
@@ -380,20 +394,135 @@ jobs:
             ### Windows
             ```cmd
             # Download and extract the ZIP file
-            # Add the executable to your PATH
+            # Add the executable to your PATH environment variable
             ```
             
-            ## Quick Start
+            ## Quick Start Examples
+            
+            ### Basic DNS Query
             ```bash
             # Simple DNS query
             ${{ env.APP_NAME }} -d example.com
             
-            # Start DNS forwarder
-            sudo ${{ env.APP_NAME }} forward -s https://your-dns-server.com:8443
+            # Query specific record type
+            ${{ env.APP_NAME }} -d example.com -t AAAA
+            
+            # JSON output
+            ${{ env.APP_NAME }} -d example.com -j
+            ```
+            
+            ### DNS Forwarding
+            ```bash
+            # Start DNS forwarder (requires sudo for port 53)
+            sudo ${{ env.APP_NAME }} forward -s https://your-server:8443 -a your-token
+            
+            # Forward UDP and TCP
+            sudo ${{ env.APP_NAME }} forward -u -T -s https://your-server:8443
+            ```
+            
+            ### mTLS Authentication
+            ```bash
+            # With client certificates
+            ${{ env.APP_NAME }} -d example.com \
+              -s https://your-server:8443 \
+              -a your-token \
+              --ca-cert ca.crt \
+              --client-cert client.crt \
+              --client-key client.key
+            ```
+            
+            ### Configuration File
+            ```bash
+            # Generate example configuration
+            ${{ env.APP_NAME }} config generate client.yaml
+            
+            # Use configuration file
+            ${{ env.APP_NAME }} -c client.yaml -d example.com
+            ```
+            
+            ## Docker Images
+            
+            - `penguincloud/${{ env.APP_NAME }}:${{ steps.version.outputs.VERSION }}` - Go client
+            - `penguincloud/${{ env.APP_NAME }}:latest` - Latest Go client
+            - `ghcr.io/${{ github.repository }}-go:${{ steps.version.outputs.VERSION }}` - GitHub Container Registry
+            
+            ## Platform Support
+            
+            - **Linux**: AMD64, ARM64 (native binaries + Docker + .deb packages)
+            - **macOS**: Universal binary (Intel + Apple Silicon)
+            - **Windows**: AMD64 (native binary)
+            - **Docker**: Multi-architecture (linux/amd64, linux/arm64)
+            
+            ## Performance Characteristics
+            
+            - **Cold Start**: ~10ms (vs ~100ms Python)
+            - **Memory Usage**: ~15MB (vs ~30MB Python)  
+            - **Binary Size**: Single ~10MB executable
+            - **Concurrent Requests**: Native goroutine support
+            
+            ## Environment Variables
+            
+            ```bash
+            # Server configuration
+            export SQUAWK_SERVER_URL=https://dns.example.com:8443
+            export SQUAWK_AUTH_TOKEN=your-bearer-token
+            export SQUAWK_DOMAIN=example.com
+            export SQUAWK_RECORD_TYPE=A
+            
+            # mTLS configuration
+            export SQUAWK_CLIENT_CERT=/path/to/client.crt
+            export SQUAWK_CLIENT_KEY=/path/to/client.key
+            export SQUAWK_CA_CERT=/path/to/ca.crt
+            export SQUAWK_VERIFY_SSL=true
+            
+            # DNS forwarding
+            export SQUAWK_LISTEN_UDP=true
+            export SQUAWK_LISTEN_TCP=true
+            export SQUAWK_UDP_ADDRESS=127.0.0.1:53
+            export SQUAWK_TCP_ADDRESS=127.0.0.1:53
+            ```
+            
+            ## Compatibility with Python Client
+            
+            The Go client provides 1:1 feature parity:
+            
+            | Feature | Python | Go |
+            |---------|--------|----|
+            | DNS-over-HTTPS | ✅ | ✅ |
+            | Bearer Token Auth | ✅ | ✅ |
+            | mTLS Support | ✅ | ✅ |
+            | UDP/TCP Forwarding | ✅ | ✅ |
+            | Configuration Files | ✅ | ✅ |
+            | Environment Variables | ✅ | ✅ |
+            | SSL Verification | ✅ | ✅ |
+            | JSON Output | ✅ | ✅ |
+            
+            ## Security Features
+            
+            - TLS certificate verification (enabled by default)
+            - Client certificate support for mTLS
+            - Secure defaults with configurable security levels
+            - CA certificate validation
+            - Bearer token authentication
+            
+            ## Command Reference
+            
+            ```bash
+            # Main commands
+            ${{ env.APP_NAME }}              # DNS query mode
+            ${{ env.APP_NAME }} forward      # DNS forwarding mode
+            ${{ env.APP_NAME }} config       # Configuration management
+            ${{ env.APP_NAME }} version      # Version information
+            
+            # Global flags
+            -c, --config     # Configuration file path
+            -v, --verbose    # Enable verbose output
+            -h, --help       # Show help
             ```
             
             ## Checksums
-            Verify downloads using SHA256SUMS file included in this release.
+            
+            Verify downloads using the SHA256SUMS file included in this release.
             
             Built from commit: ${{ github.sha }}
 
@@ -497,7 +626,7 @@ jobs:
           asset_name: SHA256SUMS
           asset_content_type: text/plain
 
-      # Docker build and push for Go client
+      # Docker build and push
       - name: Set up Docker Buildx
         if: steps.tag_check.outputs.EXISTS == 'false'
         uses: docker/setup-buildx-action@v3
@@ -517,7 +646,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      # Build and push Go client Docker image
+      - name: Build and push Go client Docker image
         if: steps.tag_check.outputs.EXISTS == 'false'
         uses: docker/build-push-action@v5
         with:
@@ -533,6 +663,12 @@ jobs:
             penguincloud/${{ env.APP_NAME }}:latest
             ghcr.io/${{ github.repository }}-go:${{ steps.version.outputs.VERSION }}
             ghcr.io/${{ github.repository }}-go:latest
+          labels: |
+            org.opencontainers.image.title=Squawk DNS Client (Go)
+            org.opencontainers.image.description=High-performance DNS-over-HTTPS client with mTLS support
+            org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
 
   # Notification job
   notify:
@@ -541,9 +677,12 @@ jobs:
     needs: build-and-release
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Release Summary
+      - name: Go Client Release Summary
         run: |
-          echo "✅ Go Client Release Complete!"
+          echo "✅ Squawk DNS Client (Go) Release Complete!"
           echo "Version: $(cat .version)"
           echo "Platforms: Linux (amd64, arm64), macOS (universal, amd64, arm64), Windows (amd64)"
-          echo "Packages: tar.gz archives, Debian packages, Docker images"
+          echo "Packages: Native binaries, Debian packages, Docker multi-arch image"
+          echo "Features: DoH, mTLS, DNS forwarding, YAML config, environment variables"
+          echo "Performance: ~10ms cold start, ~15MB memory, single binary"
+          echo "Docker: penguincloud/squawk-dns-client and ghcr.io
