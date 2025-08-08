@@ -1,39 +1,39 @@
-Credited contributor in the project README employers may utilize this project under the latest MIT license (https://opensource.org/license/mit) for any releases for non-direct revenue generating projects, internal usage. 
-Employers cannot build products on top of and then sell as a software service or bundle or directly resell this project.
-However on termination of the contributor, all future releases of this project will be under the AGPLv3 license spelled out below.
-Code owners offer a paid license option to reduce the code base to GPLv2.
+## Additional Exception/Condition
 
-GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
+Repacking this software for commercial use, including but not limited to reselling, bundling, or offering as a service, is not permitted without an explicit commercial license granted by the software owner. Contact the project maintainers for licensing options.
 
- Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- Everyone is permitted to copy and distribute verbatim copies
- of this license document, but changing it is not allowed.
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
 
 # Preamble
 
-  The GNU Affero General Public License is a free, copyleft license for
+The GNU Affero General Public License is a free, copyleft license for
 software and other kinds of works, specifically designed to ensure
 cooperation with the community in the case of network server software.
 
-  The licenses for most software and other practical works are designed
+The licenses for most software and other practical works are designed
 to take away your freedom to share and change the works.  By contrast,
 our General Public Licenses are intended to guarantee your freedom to
 share and change all versions of a program--to make sure it remains free
 software for all its users.
 
-  When we speak of free software, we are referring to freedom, not
+When we speak of free software, we are referring to freedom, not
 price.  Our General Public Licenses are designed to make sure that you
 have the freedom to distribute copies of free software (and charge for
 them if you wish), that you receive source code or can get it if you
 want it, that you can change the software or use pieces of it in new
 free programs, and that you know you can do these things.
 
-  Developers that use our General Public Licenses protect your rights
+Developers that use our General Public Licenses protect your rights
 with two steps: (1) assert copyright on the software, and (2) offer
 you this License which gives you legal permission to copy, distribute
 and/or modify the software.
 
-  A secondary benefit of defending all users' freedom is that
+A secondary benefit of defending all users' freedom is that
 improvements made in alternate versions of the program, if they
 receive widespread use, become available for other developers to
 incorporate.  Many developers of free software are heartened and

@@ -1,0 +1,78 @@
+[[extend 'layout.html']]
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">[[=token_count]]</div>
+        <div class="stat-label">Active Tokens</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">[[=domain_count]]</div>
+        <div class="stat-label">Managed Domains</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">[[=len(recent_queries)]]</div>
+        <div class="stat-label">Recent Queries</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Recent Query Activity</h2>
+    </div>
+    
+    [[if recent_queries:]]
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Token</th>
+                <th>Domain</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Client IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            [[for log in recent_queries:]]
+            <tr>
+                <td>[[=log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A']]</td>
+                <td>
+                    [[if log.token_id:]]
+                        [[token = db.tokens[log.token_id] ]]
+                        [[=token.name if token else 'Unknown']]
+                    [[else:]]
+                        <span class="badge badge-danger">Invalid Token</span>
+                    [[pass]]
+                </td>
+                <td>[[=log.domain_queried]]</td>
+                <td>[[=log.query_type]]</td>
+                <td>
+                    [[if log.status == 'allowed':]]
+                        <span class="badge badge-success">Allowed</span>
+                    [[elif log.status == 'denied':]]
+                        <span class="badge badge-danger">Denied</span>
+                    [[else:]]
+                        <span class="badge">[[=log.status]]</span>
+                    [[pass]]
+                </td>
+                <td>[[=log.client_ip or 'N/A']]</td>
+            </tr>
+            [[pass]]
+        </tbody>
+    </table>
+    [[else:]]
+    <p>No recent queries to display.</p>
+    [[pass]]
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Quick Actions</h2>
+    </div>
+    
+    <div style="display: flex; gap: 1rem;">
+        <a href="[[=URL('tokens/new')]]" class="btn btn-success">Create New Token</a>
+        <a href="[[=URL('domains/new')]]" class="btn">Add Domain</a>
+        <a href="[[=URL('permissions')]]" class="btn btn-secondary">Manage Permissions</a>
+    </div>
+</div>

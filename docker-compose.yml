@@ -1,5 +1,224 @@
 ---
-version: "2.4"
+version: "3.8"
+
 services:
-  app:
-    image: penguintech/core-ansible
+  # DNS Server with Web Console
+  dns-server:
+    build:
+      context: .
+      target: dns-server
+    container_name: squawk-dns-server
+    ports:
+      - "8080:8080"  # DNS server
+      - "8000:8000"  # Web console
+    environment:
+      - SQUAWK_ENV=development
+      - SQUAWK_DEBUG=true
+      - SQUAWK_PORT=8080
+      - SQUAWK_CONSOLE_PORT=8000
+      - USE_NEW_AUTH=true
+      - DB_TYPE=sqlite
+      - DB_URL=dns_auth.db
+    volumes:
+      - dns_data:/app/data
+      - dns_logs:/app/logs
+      - ./dns-server:/app/dns-server:ro
+      - ./docs:/app/docs:ro
+    networks:
+      - squawk-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # DNS Client for local forwarding
+  dns-client:
+    build:
+      context: .
+      target: dns-client
+    container_name: squawk-dns-client
+    ports:
+      - "5353:53/udp"  # Local DNS forwarding (non-privileged port)
+      - "5353:53/tcp"
+    environment:
+      - DNS_SERVER=http://dns-server:8080
+      - AUTH_TOKEN=test-token-for-development
+      - ENABLE_UDP=true
+      - ENABLE_TCP=true
+    volumes:
+      - ./dns-client:/app/dns-client:ro
+      - dns_logs:/app/logs
+    networks:
+      - squawk-network
+    depends_on:
+      - dns-server
+    restart: unless-stopped
+
+  # PostgreSQL Database (for production-like testing)
+  postgres:
+    image: postgres:15-alpine
+    container_name: squawk-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: squawk
+      POSTGRES_USER: squawk_user
+      POSTGRES_PASSWORD: squawk_pass_dev_only
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - squawk-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U squawk_user -d squawk"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # DNS Server with PostgreSQL
+  dns-server-postgres:
+    build:
+      context: .
+      target: dns-server
+    container_name: squawk-dns-server-postgres
+    ports:
+      - "8081:8080"  # Different port to avoid conflict
+      - "8001:8000"
+    environment:
+      - SQUAWK_ENV=development
+      - SQUAWK_DEBUG=true
+      - SQUAWK_PORT=8080
+      - USE_NEW_AUTH=true
+      - DB_TYPE=postgres
+      - DB_URL=postgresql://squawk_user:squawk_pass_dev_only@postgres:5432/squawk
+    volumes:
+      - dns_logs:/app/logs
+      - ./dns-server:/app/dns-server:ro
+    networks:
+      - squawk-network
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - postgres
+
+  # Testing container
+  test-runner:
+    build:
+      context: .
+      target: testing
+    container_name: squawk-test-runner
+    environment:
+      - SQUAWK_ENV=testing
+      - PYTHONPATH=/app
+    volumes:
+      - ./dns-server/tests:/app/dns-server/tests:ro
+      - ./dns-client/tests:/app/dns-client/tests:ro
+      - test_results:/app/test-results
+    networks:
+      - squawk-network
+    profiles:
+      - testing
+    command: |
+      bash -c "
+        echo 'Running comprehensive test suite...'
+        
+        # Run security checks
+        echo 'Running security checks...'
+        bandit -r /app/dns-server/bins/ -f json -o /app/test-results/bandit-report.json || true
+        safety check --json --output /app/test-results/safety-report.json || true
+        
+        # Run linting
+        echo 'Running code quality checks...'
+        flake8 /app/dns-server/bins/ --output-file /app/test-results/flake8-report.txt || true
+        black --check /app/dns-server/bins/ || true
+        
+        # Run unit tests with coverage
+        echo 'Running unit tests...'
+        pytest /app/dns-server/tests/ /app/dns-client/tests/ \
+          -v \
+          --cov=/app/dns-server/bins \
+          --cov=/app/dns-client/bins \
+          --cov-report=html:/app/test-results/coverage-html \
+          --cov-report=xml:/app/test-results/coverage.xml \
+          --junit-xml=/app/test-results/junit.xml || true
+        
+        echo 'Test suite completed. Results in /app/test-results/'
+        ls -la /app/test-results/
+      "
+
+  # Load testing container
+  load-tester:
+    image: grafana/k6:latest
+    container_name: squawk-load-tester
+    volumes:
+      - ./tests/load-test.js:/load-test.js:ro
+      - test_results:/app/test-results
+    networks:
+      - squawk-network
+    profiles:
+      - load-test
+    depends_on:
+      - dns-server
+    command: run --out json=/app/test-results/load-test-results.json /load-test.js
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: squawk-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - squawk-network
+    profiles:
+      - monitoring
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  # Grafana Dashboard (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: squawk-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - squawk-network
+    profiles:
+      - monitoring
+    depends_on:
+      - prometheus
+
+networks:
+  squawk-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  dns_data:
+  dns_logs:
+  postgres_data:
+  test_results:
+  prometheus_data:
+  grafana_data:
