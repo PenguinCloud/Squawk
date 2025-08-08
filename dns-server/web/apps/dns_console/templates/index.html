@@ -70,9 +70,32 @@
         <h2 class="card-title">Quick Actions</h2>
     </div>
     
-    <div style="display: flex; gap: 1rem;">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
         <a href="[[=URL('tokens/new')]]" class="btn btn-success">Create New Token</a>
         <a href="[[=URL('domains/new')]]" class="btn">Add Domain</a>
         <a href="[[=URL('permissions')]]" class="btn btn-secondary">Manage Permissions</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Security & Authentication</h2>
+    </div>
+    
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="[[=URL('mfa/setup')]]" class="btn btn-warning">
+            <i class="fas fa-shield-alt"></i> MFA Settings
+        </a>
+        <a href="[[=URL('blacklist')]]" class="btn btn-danger">
+            <i class="fas fa-ban"></i> Blacklist Management
+        </a>
+        <a href="[[=URL('certificates')]]" class="btn btn-info">
+            <i class="fas fa-certificate"></i> TLS Certificates
+        </a>
+        [[if auth.current_user and (auth.current_user.get('is_admin') or 'admin' in auth.current_user.get('groups', [])):]]
+        <a href="[[=URL('admin/sso')]]" class="btn btn-primary">
+            <i class="fas fa-users-cog"></i> SSO Configuration
+        </a>
+        [[pass]]
     </div>
 </div>

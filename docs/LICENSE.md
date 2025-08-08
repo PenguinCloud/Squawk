@@ -1,6 +1,6 @@
 ## Additional Exception/Condition
 
-Repacking this software for commercial use, including but not limited to reselling, bundling, or offering as a service, is not permitted without an explicit commercial license granted by the software owner. Contact the project maintainers for licensing options.
+Repacking this software for commercial use, including but not limited to reselling, bundling, or offering as a service, is not permitted without an explicit commercial license granted by the software owner. This product may not be sold or used outside of internal corporate or individual non-commercial use except by the owners of this repository, unless a license is purchased. AGPL3 license applies for internal or non-commercial individual user use cases. This ensures funding to maintain the project continues and ensures fair use. Contact the project maintainers for licensing options.
 
 GNU AFFERO GENERAL PUBLIC LICENSE
 Version 3, 19 November 2007

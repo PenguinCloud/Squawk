@@ -22,6 +22,10 @@ from typing import Set, Optional
 import threading
 import schedule
 import time
+import ssl
+from cert_manager import CertificateManager
+from logging_manager import get_request_logger
+import time
 
 # Try to use uvloop for better performance on Linux/Mac
 try:
@@ -41,6 +45,12 @@ ALLOWED_DOMAINS = []
 USE_NEW_AUTH = False
 ENABLE_BLACKLIST = os.getenv('ENABLE_BLACKLIST', 'false').lower() == 'true'
 BLACKLIST_UPDATE_INTERVAL = int(os.getenv('BLACKLIST_UPDATE_HOURS', '24'))
+
+# mTLS Configuration
+ENABLE_MTLS = os.getenv('ENABLE_MTLS', 'false').lower() == 'true'
+MTLS_ENFORCE = os.getenv('MTLS_ENFORCE', 'false').lower() == 'true'
+MTLS_CA_CERT = os.getenv('MTLS_CA_CERT', 'certs/ca.crt')
+CERT_DIR = os.getenv('CERT_DIR', 'certs')
 
 # Performance settings
 MAX_WORKERS = int(os.getenv('MAX_WORKERS', '100'))
@@ -204,14 +214,103 @@ class BlacklistManager:
 # Initialize blacklist manager
 blacklist_manager = BlacklistManager()
 
+# Initialize certificate manager for mTLS
+cert_manager = CertificateManager(cert_dir=CERT_DIR) if ENABLE_MTLS else None
+
+# Initialize request logger
+request_logger = get_request_logger()
+
 # Semaphore for rate limiting
 request_semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
+
+async def verify_client_certificate():
+    """Verify client certificate for mTLS"""
+    if not ENABLE_MTLS:
+        return True, None, "mTLS disabled"
+    
+    # Get client certificate from request
+    client_cert_pem = request.headers.get('X-SSL-CERT')
+    if not client_cert_pem:
+        if MTLS_ENFORCE:
+            return False, None, "Client certificate required"
+        return True, None, "No client certificate provided"
+    
+    try:
+        # Decode the certificate (assuming it's URL-encoded)
+        import urllib.parse
+        from cryptography import x509
+        from cryptography.hazmat.backends import default_backend
+        
+        cert_pem = urllib.parse.unquote(client_cert_pem)
+        client_cert = x509.load_pem_x509_certificate(cert_pem.encode(), default_backend())
+        
+        # Verify certificate chain
+        if cert_manager and cert_manager.ca_cert_path.exists():
+            ca_cert = cert_manager.load_certificate(cert_manager.ca_cert_path)
+            
+            # Verify the certificate was signed by our CA
+            try:
+                ca_public_key = ca_cert.public_key()
+                
+                # Determine signature algorithm based on key type
+                from cryptography.hazmat.primitives.asymmetric import ec
+                if isinstance(ca_public_key, ec.EllipticCurvePublicKey):
+                    sig_algo = ec.ECDSA(hashes.SHA384())
+                else:
+                    sig_algo = hashes.SHA256()
+                
+                ca_public_key.verify(
+                    client_cert.signature,
+                    client_cert.tbs_certificate_bytes,
+                    sig_algo
+                )
+            except Exception as e:
+                return False, None, f"Certificate verification failed: {e}"
+        
+        # Check if certificate is revoked
+        client_name = client_cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
+        clients = cert_manager.list_client_certificates() if cert_manager else {}
+        
+        if client_name in clients and clients[client_name].get('revoked'):
+            return False, None, "Client certificate has been revoked"
+        
+        # Check certificate validity
+        import datetime
+        now = datetime.datetime.utcnow()
+        if now < client_cert.not_valid_before or now > client_cert.not_valid_after:
+            return False, None, "Client certificate is not valid"
+        
+        return True, client_cert, "Certificate valid"
+        
+    except Exception as e:
+        return False, None, f"Certificate parsing error: {e}"
 
 @app.route('/dns-query', methods=['GET', 'POST'])
 async def dns_query():
     global AUTH_TOKEN, ALLOWED_DOMAINS, DB_TYPE, DB_URL, USE_NEW_AUTH
     
+    start_time = time.time()
+    response_data = None
+    cache_hit = False
+    blocked = False
+    client_cert_subject = None
+    
     async with request_semaphore:
+        # Verify client certificate if mTLS is enabled
+        if ENABLE_MTLS:
+            cert_valid, client_cert, cert_message = await verify_client_certificate()
+            if not cert_valid:
+                logger.warning(f"mTLS verification failed: {cert_message}")
+                request_logger.log_security_event(
+                    request, 'mtls_auth_failure', cert_message, 'WARNING'
+                )
+                return jsonify({"Status": 2, "Comment": "Certificate verification failed"}), 403
+            
+            if client_cert:
+                client_name = client_cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
+                client_cert_subject = client_name
+                logger.debug(f"mTLS client authenticated: {client_name}")
+        
         # Extract token from Authorization header
         auth_header = request.headers.get('Authorization')
         token = auth_header.split('Bearer ')[-1] if auth_header else None
@@ -235,22 +334,35 @@ async def dns_query():
             return jsonify({"Status": 2, "Comment": "Invalid domain format"}), 400
         
         # Check blacklist
-        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        client_ip = request.environ.get('REMOTE_ADDR', 'unknown')
         if blacklist_manager.is_blocked(name, client_ip):
             logger.info(f"Blocked query for blacklisted domain: {name}")
-            await log_query_new(token, name, dns_type, 'blocked', client_ip)
-            # Return NXDOMAIN for blocked domains (DNS blackholing)
-            return jsonify({
+            blocked = True
+            response_data = {
                 "Status": 3,  # NXDOMAIN
                 "Comment": "Domain blocked by policy",
                 "Answer": []
-            })
+            }
+            
+            # Log the blocked request
+            processing_time = time.time() - start_time
+            request_logger.log_dns_request(
+                request, name, dns_type, 'blocked', 403, token, 
+                client_cert_subject, processing_time, 
+                len(json.dumps(response_data)), cache_hit, blocked
+            )
+            
+            await log_query_new(token, name, dns_type, 'blocked', client_ip)
+            return jsonify(response_data)
         
         # Check authorization
         if USE_NEW_AUTH and DB_TYPE and DB_URL:
             # Use new token management system
             if not await check_token_permission_new(token, name):
                 logger.warning(f"Access denied for token to domain: {name}")
+                request_logger.log_security_event(
+                    request, 'token_auth_failure', f"Access denied for domain: {name}", 'WARNING'
+                )
                 await log_query_new(token, name, dns_type, 'denied', client_ip)
                 return jsonify({"Status": 2, "Comment": "Access denied"}), 403
             await log_query_new(token, name, dns_type, 'allowed', client_ip)
@@ -268,7 +380,18 @@ async def dns_query():
         cache_key = f"dns:{name}:{dns_type}"
         cached_result = await cache_manager.get(cache_key)
         if cached_result:
+            cache_hit = True
+            response_data = cached_result
             logger.debug(f"Cache hit for {name} ({dns_type})")
+            
+            # Log the cached request
+            processing_time = time.time() - start_time
+            request_logger.log_dns_request(
+                request, name, dns_type, 'success', 200, token,
+                client_cert_subject, processing_time,
+                len(json.dumps(response_data)), cache_hit, blocked
+            )
+            
             return jsonify(cached_result)
         
         # Resolve DNS
@@ -279,6 +402,17 @@ async def dns_query():
         if response_data.get("Status") == 0:
             ttl = min(response_data.get("TTL", CACHE_TTL), CACHE_TTL)
             await cache_manager.set(cache_key, response_data, ttl)
+        
+        # Log the request
+        processing_time = time.time() - start_time
+        status_code = 200 if response_data.get("Status") == 0 else 400
+        status_text = 'success' if response_data.get("Status") == 0 else 'error'
+        
+        request_logger.log_dns_request(
+            request, name, dns_type, status_text, status_code, token,
+            client_cert_subject, processing_time,
+            len(json.dumps(response_data)), cache_hit, blocked
+        )
         
         return jsonify(response_data)
 
@@ -431,15 +565,63 @@ async def remove_blocked_ip(ip):
     # Implementation would remove from database
     logger.info(f"Removed blocked IP: {ip}")
 
+def create_ssl_context():
+    """Create SSL context with optional mTLS support"""
+    if not KEY_FILE or not CERT_FILE:
+        return None
+    
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    context.load_cert_chain(CERT_FILE, KEY_FILE)
+    
+    # Configure mTLS if enabled
+    if ENABLE_MTLS:
+        if os.path.exists(MTLS_CA_CERT):
+            context.load_verify_locations(MTLS_CA_CERT)
+            if MTLS_ENFORCE:
+                context.verify_mode = ssl.CERT_REQUIRED
+                logger.info("mTLS enabled with certificate requirement")
+            else:
+                context.verify_mode = ssl.CERT_OPTIONAL
+                logger.info("mTLS enabled with optional certificates")
+        else:
+            logger.warning(f"mTLS CA certificate not found at {MTLS_CA_CERT}")
+            # Auto-generate certificates if missing
+            if cert_manager:
+                logger.info("Auto-generating TLS certificates...")
+                cert_manager.generate_ca_certificate()
+                cert_manager.generate_server_certificate()
+                
+                # Update paths
+                global KEY_FILE, CERT_FILE
+                KEY_FILE = str(cert_manager.server_key_path)
+                CERT_FILE = str(cert_manager.server_cert_path)
+                
+                # Recreate context with new certificates
+                context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                context.load_cert_chain(CERT_FILE, KEY_FILE)
+                
+                if cert_manager.ca_cert_path.exists():
+                    context.load_verify_locations(str(cert_manager.ca_cert_path))
+                    if MTLS_ENFORCE:
+                        context.verify_mode = ssl.CERT_REQUIRED
+                    else:
+                        context.verify_mode = ssl.CERT_OPTIONAL
+    
+    # Security settings
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.set_ciphers('ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS')
+    
+    return context
+
 def main(argv):
     global AUTH_TOKEN, KEY_FILE, CERT_FILE, DB_TYPE, DB_URL, ALLOWED_DOMAINS, USE_NEW_AUTH, PORT
     
     try:
-        opts, args = getopt.getopt(argv, "hp:t:k:c:d:u:a:n", 
+        opts, args = getopt.getopt(argv, "hp:t:k:c:d:u:a:nm", 
                                    ["port=", "token=", "key=", "cert=", 
-                                    "dbtype=", "dburl=", "allowed=", "newauth"])
+                                    "dbtype=", "dburl=", "allowed=", "newauth", "mtls"])
     except getopt.GetoptError:
-        print('Usage: server_optimized.py -p <port> -t <token> -k <keyfile> -c <certfile>')
+        print('Usage: server_optimized.py -p <port> -t <token> -k <keyfile> -c <certfile> -m')
         sys.exit(2)
     
     for opt, arg in opts:
@@ -462,20 +644,29 @@ def main(argv):
             ALLOWED_DOMAINS = arg.split(',')
         elif opt in ("-n", "--newauth"):
             USE_NEW_AUTH = True
+        elif opt in ("-m", "--mtls"):
+            global ENABLE_MTLS
+            ENABLE_MTLS = True
     
     # Configure Hypercorn for production
     config = Config()
     config.bind = [f"0.0.0.0:{PORT}"]
     config.workers = MAX_WORKERS
     
-    # Enable HTTP/3 if certificates are provided
-    if KEY_FILE and CERT_FILE:
-        config.certfile = CERT_FILE
-        config.keyfile = KEY_FILE
+    # Create SSL context
+    ssl_context = create_ssl_context()
+    
+    # Enable HTTPS/HTTP/3 if certificates are provided
+    if ssl_context:
+        config.ssl_context = ssl_context
         config.bind = [f"0.0.0.0:{PORT}"]
         # Enable HTTP/3
         config.quic_bind = [f"0.0.0.0:{PORT}"]
-        logger.info(f"Starting optimized DNS server with HTTP/3 on port {PORT}")
+        
+        if ENABLE_MTLS:
+            logger.info(f"Starting optimized DNS server with HTTP/3 and mTLS on port {PORT}")
+        else:
+            logger.info(f"Starting optimized DNS server with HTTP/3 and TLS on port {PORT}")
     else:
         logger.info(f"Starting optimized DNS server on port {PORT} (HTTP/1.1 and HTTP/2)")
     

@@ -22,8 +22,54 @@ class CacheManager:
         self.valkey_url = os.getenv('VALKEY_URL', os.getenv('REDIS_URL', ''))
         self.cache_prefix = os.getenv('CACHE_PREFIX', 'squawk:dns:')
         
+        # Security settings
+        self.redis_username = os.getenv('REDIS_USERNAME', '')
+        self.redis_password = os.getenv('REDIS_PASSWORD', '')
+        self.redis_use_tls = os.getenv('REDIS_USE_TLS', 'false').lower() == 'true'
+        self.redis_tls_cert_file = os.getenv('REDIS_TLS_CERT_FILE', '')
+        self.redis_tls_key_file = os.getenv('REDIS_TLS_KEY_FILE', '')
+        self.redis_tls_ca_file = os.getenv('REDIS_TLS_CA_FILE', '')
+        self.redis_tls_verify_mode = os.getenv('REDIS_TLS_VERIFY_MODE', 'required')
+        
         if self.cache_enabled:
             asyncio.create_task(self._initialize_backend())
+            
+        # Security warnings for production
+        self._check_security_warnings()
+    
+    def _check_security_warnings(self):
+        """Check for insecure configurations and log warnings"""
+        warnings = []
+        
+        if self.cache_enabled and self.valkey_url:
+            # Check for insecure connections
+            if not self.redis_use_tls and not self.valkey_url.startswith(('rediss://', 'valkeys://')):
+                warnings.append("Redis/Valkey TLS is disabled - traffic is unencrypted")
+            
+            # Check for missing authentication
+            if not self.redis_username and not self.redis_password:
+                if not ('username' in self.valkey_url and 'password' in self.valkey_url):
+                    warnings.append("Redis/Valkey authentication is not configured - cache is unsecured")
+            
+            # Check for insecure TLS verification
+            if self.redis_tls_verify_mode == 'none':
+                warnings.append("Redis/Valkey TLS verification is disabled - vulnerable to MITM attacks")
+            elif self.redis_tls_verify_mode == 'optional':
+                warnings.append("Redis/Valkey TLS verification is optional - reduced security")
+        
+        # Log security warnings
+        for warning in warnings:
+            logger.warning(f"SECURITY WARNING: {warning}")
+            
+        if warnings:
+            logger.warning("=" * 80)
+            logger.warning("PRODUCTION SECURITY WARNING: Insecure cache configuration detected!")
+            logger.warning("For production deployments, ensure:")
+            logger.warning("- REDIS_USE_TLS=true")
+            logger.warning("- REDIS_USERNAME and REDIS_PASSWORD are set")
+            logger.warning("- REDIS_TLS_VERIFY_MODE=required")
+            logger.warning("- Use rediss:// or valkeys:// connection strings")
+            logger.warning("=" * 80)
     
     async def _initialize_backend(self):
         """Initialize cache backend (Valkey/Redis or in-memory)"""
@@ -46,54 +92,128 @@ class CacheManager:
             self._setup_memory_cache()
     
     async def _setup_valkey(self):
-        """Setup Valkey connection"""
+        """Setup Valkey connection with TLS and authentication"""
         import valkey
+        import ssl
         
-        # Parse connection URL
-        if self.valkey_url.startswith('valkey://'):
-            url = self.valkey_url
+        connection_kwargs = {
+            'decode_responses': True,
+            'socket_connect_timeout': 5,
+            'socket_timeout': 5,
+            'health_check_interval': 30,
+        }
+        
+        # Add authentication if provided
+        if self.redis_username:
+            connection_kwargs['username'] = self.redis_username
+        if self.redis_password:
+            connection_kwargs['password'] = self.redis_password
+        
+        # Configure TLS if enabled
+        if self.redis_use_tls or self.valkey_url.startswith('rediss://') or self.valkey_url.startswith('valkeys://'):
+            ssl_context = ssl.create_default_context()
+            
+            # Set verification mode
+            if self.redis_tls_verify_mode == 'none':
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+            elif self.redis_tls_verify_mode == 'optional':
+                ssl_context.verify_mode = ssl.CERT_OPTIONAL
+            else:  # required (default)
+                ssl_context.verify_mode = ssl.CERT_REQUIRED
+            
+            # Load certificates
+            if self.redis_tls_ca_file:
+                ssl_context.load_verify_locations(self.redis_tls_ca_file)
+            
+            if self.redis_tls_cert_file and self.redis_tls_key_file:
+                ssl_context.load_cert_chain(self.redis_tls_cert_file, self.redis_tls_key_file)
+            
+            connection_kwargs['ssl'] = ssl_context
+            connection_kwargs['ssl_check_hostname'] = ssl_context.check_hostname
+        
+        # Create client from URL or manual configuration
+        if self.valkey_url.startswith(('valkey://', 'valkeys://', 'redis://', 'rediss://')):
+            client = valkey.Valkey.from_url(self.valkey_url, **connection_kwargs)
         else:
-            # Assume it's a host:port format
+            # Parse host:port format
             parts = self.valkey_url.split(':')
             host = parts[0]
             port = int(parts[1]) if len(parts) > 1 else 6379
-            url = f"valkey://{host}:{port}"
+            
+            connection_kwargs.update({
+                'host': host,
+                'port': port,
+            })
+            
+            client = valkey.Valkey(**connection_kwargs)
         
-        client = valkey.Valkey.from_url(
-            url,
-            decode_responses=True,
-            socket_connect_timeout=5,
-            socket_timeout=5
-        )
-        
-        # Test connection
+        # Test connection with authentication
         await client.ping()
+        logger.info(f"Connected to Valkey at {self.valkey_url} (TLS: {self.redis_use_tls})")
         return ValkeyCache(client, self.cache_ttl, self.cache_prefix)
     
     async def _setup_redis(self):
-        """Setup Redis connection"""
+        """Setup Redis connection with TLS and authentication"""
         import redis.asyncio as redis
+        import ssl
         
-        # Parse connection URL
-        if self.valkey_url.startswith('redis://'):
-            url = self.valkey_url
+        connection_kwargs = {
+            'encoding': "utf-8",
+            'decode_responses': True,
+            'socket_connect_timeout': 5,
+            'socket_timeout': 5,
+            'health_check_interval': 30,
+        }
+        
+        # Add authentication if provided
+        if self.redis_username:
+            connection_kwargs['username'] = self.redis_username
+        if self.redis_password:
+            connection_kwargs['password'] = self.redis_password
+        
+        # Configure TLS if enabled
+        if self.redis_use_tls or self.valkey_url.startswith('rediss://'):
+            ssl_context = ssl.create_default_context()
+            
+            # Set verification mode
+            if self.redis_tls_verify_mode == 'none':
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+            elif self.redis_tls_verify_mode == 'optional':
+                ssl_context.verify_mode = ssl.CERT_OPTIONAL
+            else:  # required (default)
+                ssl_context.verify_mode = ssl.CERT_REQUIRED
+            
+            # Load certificates
+            if self.redis_tls_ca_file:
+                ssl_context.load_verify_locations(self.redis_tls_ca_file)
+            
+            if self.redis_tls_cert_file and self.redis_tls_key_file:
+                ssl_context.load_cert_chain(self.redis_tls_cert_file, self.redis_tls_key_file)
+            
+            connection_kwargs['ssl'] = ssl_context
+            connection_kwargs['ssl_check_hostname'] = ssl_context.check_hostname
+        
+        # Create client from URL or manual configuration
+        if self.valkey_url.startswith(('redis://', 'rediss://')):
+            client = await redis.from_url(self.valkey_url, **connection_kwargs)
         else:
-            # Assume it's a host:port format
+            # Parse host:port format
             parts = self.valkey_url.split(':')
             host = parts[0]
             port = int(parts[1]) if len(parts) > 1 else 6379
-            url = f"redis://{host}:{port}"
+            
+            connection_kwargs.update({
+                'host': host,
+                'port': port,
+            })
+            
+            client = redis.Redis(**connection_kwargs)
         
-        client = await redis.from_url(
-            url,
-            encoding="utf-8",
-            decode_responses=True,
-            socket_connect_timeout=5,
-            socket_timeout=5
-        )
-        
-        # Test connection
+        # Test connection with authentication
         await client.ping()
+        logger.info(f"Connected to Redis at {self.valkey_url} (TLS: {self.redis_use_tls})")
         return RedisCache(client, self.cache_ttl, self.cache_prefix)
     
     def _setup_memory_cache(self):

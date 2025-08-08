@@ -95,8 +95,21 @@ class DNSClientTray:
             udp_port = self.config.get('udp_port', 53)
             tcp_port = self.config.get('tcp_port', 53)
             
+            # Get mTLS configuration
+            client_cert = self.config.get('client_cert')
+            client_key = self.config.get('client_key')
+            ca_cert = self.config.get('ca_cert')
+            verify_ssl = self.config.get('verify_ssl', True)
+            
             # Create DNS client and forwarder
-            self.dns_client = DNSOverHTTPSClient(dns_server_url, auth_token)
+            self.dns_client = DNSOverHTTPSClient(
+                dns_server_url, 
+                auth_token,
+                client_cert=client_cert,
+                client_key=client_key,
+                ca_cert=ca_cert,
+                verify_ssl=verify_ssl
+            )
             self.forwarder = DNSForwarder(
                 self.dns_client, 
                 udp_port=udp_port,

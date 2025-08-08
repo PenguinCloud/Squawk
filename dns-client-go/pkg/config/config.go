@@ -1,0 +1,267 @@
+package config
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/penguincloud/squawk/dns-client-go/pkg/client"
+	"github.com/penguincloud/squawk/dns-client-go/pkg/forwarder"
+	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
+)
+
+// AppConfig holds the complete application configuration
+type AppConfig struct {
+	Domain       string                `yaml:"domain" json:"domain"`
+	RecordType   string                `yaml:"record_type" json:"record_type"`
+	Client       *client.Config        `yaml:"client" json:"client"`
+	Forwarder    *forwarder.Config     `yaml:"forwarder" json:"forwarder"`
+	LogLevel     string                `yaml:"log_level" json:"log_level"`
+}
+
+// DefaultConfig returns a configuration with sensible defaults
+func DefaultConfig() *AppConfig {
+	return &AppConfig{
+		Domain:     "",
+		RecordType: "A",
+		LogLevel:   "INFO",
+		Client: &client.Config{
+			ServerURL:  "https://dns.google/resolve",
+			AuthToken:  "",
+			ClientCert: "",
+			ClientKey:  "",
+			CaCert:     "",
+			VerifySSL:  true,
+		},
+		Forwarder: &forwarder.Config{
+			UDPAddress: "127.0.0.1:53",
+			TCPAddress: "127.0.0.1:53",
+			ListenUDP:  false,
+			ListenTCP:  false,
+		},
+	}
+}
+
+// LoadConfig loads configuration from file, environment variables, and defaults
+func LoadConfig(configFile string) (*AppConfig, error) {
+	config := DefaultConfig()
+
+	// Load from config file if provided
+	if configFile != "" {
+		if err := loadFromFile(configFile, config); err != nil {
+			return nil, fmt.Errorf("failed to load config file: %w", err)
+		}
+	}
+
+	// Override with environment variables
+	loadFromEnv(config)
+
+	// Validate configuration
+	if err := validateConfig(config); err != nil {
+		return nil, fmt.Errorf("invalid configuration: %w", err)
+	}
+
+	return config, nil
+}
+
+// loadFromFile loads configuration from a YAML file
+func loadFromFile(filename string, config *AppConfig) error {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return fmt.Errorf("failed to read config file: %w", err)
+	}
+
+	if err := yaml.Unmarshal(data, config); err != nil {
+		return fmt.Errorf("failed to parse config file: %w", err)
+	}
+
+	return nil
+}
+
+// loadFromEnv loads configuration from environment variables
+func loadFromEnv(config *AppConfig) {
+	// Initialize viper for environment variable handling
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	// Main configuration
+	if domain := os.Getenv("SQUAWK_DOMAIN"); domain != "" {
+		config.Domain = domain
+	}
+	if recordType := os.Getenv("SQUAWK_RECORD_TYPE"); recordType != "" {
+		config.RecordType = recordType
+	}
+	if logLevel := os.Getenv("LOG_LEVEL"); logLevel != "" {
+		config.LogLevel = logLevel
+	}
+
+	// Client configuration
+	if serverURL := os.Getenv("SQUAWK_SERVER_URL"); serverURL != "" {
+		config.Client.ServerURL = serverURL
+	}
+	if authToken := os.Getenv("SQUAWK_AUTH_TOKEN"); authToken != "" {
+		config.Client.AuthToken = authToken
+	}
+	if clientCert := os.Getenv("SQUAWK_CLIENT_CERT"); clientCert != "" {
+		config.Client.ClientCert = clientCert
+	}
+	// Support legacy environment variable names
+	if clientCert := os.Getenv("CLIENT_CERT_PATH"); clientCert != "" {
+		config.Client.ClientCert = clientCert
+	}
+	
+	if clientKey := os.Getenv("SQUAWK_CLIENT_KEY"); clientKey != "" {
+		config.Client.ClientKey = clientKey
+	}
+	// Support legacy environment variable names
+	if clientKey := os.Getenv("CLIENT_KEY_PATH"); clientKey != "" {
+		config.Client.ClientKey = clientKey
+	}
+	
+	if caCert := os.Getenv("SQUAWK_CA_CERT"); caCert != "" {
+		config.Client.CaCert = caCert
+	}
+	// Support legacy environment variable names
+	if caCert := os.Getenv("CA_CERT_PATH"); caCert != "" {
+		config.Client.CaCert = caCert
+	}
+	
+	if verifySSL := os.Getenv("SQUAWK_VERIFY_SSL"); verifySSL != "" {
+		if val, err := strconv.ParseBool(verifySSL); err == nil {
+			config.Client.VerifySSL = val
+		}
+	}
+
+	// Forwarder configuration
+	if udpAddr := os.Getenv("SQUAWK_UDP_ADDRESS"); udpAddr != "" {
+		config.Forwarder.UDPAddress = udpAddr
+	}
+	if tcpAddr := os.Getenv("SQUAWK_TCP_ADDRESS"); tcpAddr != "" {
+		config.Forwarder.TCPAddress = tcpAddr
+	}
+	if listenUDP := os.Getenv("SQUAWK_LISTEN_UDP"); listenUDP != "" {
+		if val, err := strconv.ParseBool(listenUDP); err == nil {
+			config.Forwarder.ListenUDP = val
+		}
+	}
+	if listenTCP := os.Getenv("SQUAWK_LISTEN_TCP"); listenTCP != "" {
+		if val, err := strconv.ParseBool(listenTCP); err == nil {
+			config.Forwarder.ListenTCP = val
+		}
+	}
+}
+
+// validateConfig validates the configuration
+func validateConfig(config *AppConfig) error {
+	if config == nil {
+		return fmt.Errorf("configuration is nil")
+	}
+
+	if config.Client == nil {
+		return fmt.Errorf("client configuration is required")
+	}
+
+	if config.Client.ServerURL == "" {
+		return fmt.Errorf("server URL is required")
+	}
+
+	// Validate mTLS configuration
+	if config.Client.ClientCert != "" && config.Client.ClientKey == "" {
+		return fmt.Errorf("client key is required when client certificate is provided")
+	}
+	if config.Client.ClientKey != "" && config.Client.ClientCert == "" {
+		return fmt.Errorf("client certificate is required when client key is provided")
+	}
+
+	// Check if certificate files exist
+	if config.Client.ClientCert != "" {
+		if _, err := os.Stat(config.Client.ClientCert); os.IsNotExist(err) {
+			return fmt.Errorf("client certificate file not found: %s", config.Client.ClientCert)
+		}
+	}
+	if config.Client.ClientKey != "" {
+		if _, err := os.Stat(config.Client.ClientKey); os.IsNotExist(err) {
+			return fmt.Errorf("client key file not found: %s", config.Client.ClientKey)
+		}
+	}
+	if config.Client.CaCert != "" {
+		if _, err := os.Stat(config.Client.CaCert); os.IsNotExist(err) {
+			return fmt.Errorf("CA certificate file not found: %s", config.Client.CaCert)
+		}
+	}
+
+	return nil
+}
+
+// SaveConfig saves the configuration to a YAML file
+func SaveConfig(config *AppConfig, filename string) error {
+	data, err := yaml.Marshal(config)
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %w", err)
+	}
+
+	if err := os.WriteFile(filename, data, 0644); err != nil {
+		return fmt.Errorf("failed to write config file: %w", err)
+	}
+
+	return nil
+}
+
+// GetEnvVarList returns a list of all supported environment variables
+func GetEnvVarList() []string {
+	return []string{
+		"SQUAWK_DOMAIN",
+		"SQUAWK_RECORD_TYPE", 
+		"SQUAWK_SERVER_URL",
+		"SQUAWK_AUTH_TOKEN",
+		"SQUAWK_CLIENT_CERT",
+		"SQUAWK_CLIENT_KEY",
+		"SQUAWK_CA_CERT",
+		"SQUAWK_VERIFY_SSL",
+		"SQUAWK_UDP_ADDRESS",
+		"SQUAWK_TCP_ADDRESS", 
+		"SQUAWK_LISTEN_UDP",
+		"SQUAWK_LISTEN_TCP",
+		"LOG_LEVEL",
+		// Legacy support
+		"CLIENT_CERT_PATH",
+		"CLIENT_KEY_PATH",
+		"CA_CERT_PATH",
+	}
+}
+
+// PrintConfig prints the configuration in a human-readable format
+func (c *AppConfig) String() string {
+	var sb strings.Builder
+	
+	sb.WriteString("Squawk DNS Client Configuration:\n")
+	sb.WriteString("================================\n")
+	sb.WriteString(fmt.Sprintf("Domain: %s\n", c.Domain))
+	sb.WriteString(fmt.Sprintf("Record Type: %s\n", c.RecordType))
+	sb.WriteString(fmt.Sprintf("Log Level: %s\n", c.LogLevel))
+	sb.WriteString("\nClient Configuration:\n")
+	sb.WriteString(fmt.Sprintf("  Server URL: %s\n", c.Client.ServerURL))
+	sb.WriteString(fmt.Sprintf("  Auth Token: %s\n", maskToken(c.Client.AuthToken)))
+	sb.WriteString(fmt.Sprintf("  Client Cert: %s\n", c.Client.ClientCert))
+	sb.WriteString(fmt.Sprintf("  Client Key: %s\n", c.Client.ClientKey))
+	sb.WriteString(fmt.Sprintf("  CA Cert: %s\n", c.Client.CaCert))
+	sb.WriteString(fmt.Sprintf("  Verify SSL: %t\n", c.Client.VerifySSL))
+	sb.WriteString("\nForwarder Configuration:\n")
+	sb.WriteString(fmt.Sprintf("  UDP Address: %s (Listen: %t)\n", c.Forwarder.UDPAddress, c.Forwarder.ListenUDP))
+	sb.WriteString(fmt.Sprintf("  TCP Address: %s (Listen: %t)\n", c.Forwarder.TCPAddress, c.Forwarder.ListenTCP))
+	
+	return sb.String()
+}
+
+// maskToken masks the authentication token for display purposes
+func maskToken(token string) string {
+	if token == "" {
+		return "(not set)"
+	}
+	if len(token) <= 8 {
+		return strings.Repeat("*", len(token))
+	}
+	return token[:4] + strings.Repeat("*", len(token)-8) + token[len(token)-4:]
+}
