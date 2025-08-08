@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <meta name="description" content="Squawk DNS - Secure DNS-over-HTTPS system with enterprise authentication, mTLS support, and comprehensive security features.">
+    <meta name="keywords" content="DNS, DNS-over-HTTPS, DoH, security, privacy, mTLS, authentication, enterprise">
+    <meta name="author" content="PenguinCloud">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Highlight.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/style.css" rel="stylesheet">
+    
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-shield-alt me-2"></i>
+                Squawk DNS
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link <%= page === 'home' ? 'active' : '' %>" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= page === 'features' ? 'active' : '' %>" href="/features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= page === 'documentation' ? 'active' : '' %>" href="/documentation">Documentation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= page === 'download' ? 'active' : '' %>" href="/download">Download</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <%= page === 'pricing' || page === 'enterprise' ? 'active' : '' %>" href="#" role="button" data-bs-toggle="dropdown">
+                            Solutions
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/pricing">Pricing</a></li>
+                            <li><a class="dropdown-item" href="/enterprise">Enterprise</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/penguincloud/squawk" target="_blank">
+                            <i class="fab fa-github me-1"></i>
+                            GitHub
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= page === 'contact' ? 'active' : '' %>" href="/contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <%- body %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5><i class="fas fa-shield-alt me-2"></i>Squawk DNS</h5>
+                    <p class="text-muted">Secure DNS-over-HTTPS system with enterprise authentication, mTLS support, and comprehensive security features.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/penguincloud/squawk" class="text-light me-3" target="_blank">
+                            <i class="fab fa-github fa-lg"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 mb-4">
+                    <h6>Product</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/features" class="text-muted">Features</a></li>
+                        <li><a href="/pricing" class="text-muted">Pricing</a></li>
+                        <li><a href="/enterprise" class="text-muted">Enterprise</a></li>
+                        <li><a href="/download" class="text-muted">Download</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 mb-4">
+                    <h6>Resources</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/documentation" class="text-muted">Documentation</a></li>
+                        <li><a href="https://github.com/penguincloud/squawk/issues" class="text-muted" target="_blank">GitHub Issues</a></li>
+                        <li><a href="https://github.com/penguincloud/squawk/releases" class="text-muted" target="_blank">Releases</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 mb-4">
+                    <h6>Company</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/contact" class="text-muted">Contact</a></li>
+                        <li><a href="https://support.penguintech.group" class="text-muted" target="_blank">Support</a></li>
+                        <li><a href="mailto:sales@penguincloud.io" class="text-muted">Sales</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 mb-4">
+                    <h6>Legal</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="https://github.com/penguincloud/squawk/blob/main/LICENSE.md" class="text-muted" target="_blank">License</a></li>
+                        <li><span class="text-muted small">AGPL v3</span></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <p class="mb-0 text-muted">&copy; 2025 PenguinCloud. All rights reserved.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <small class="text-muted">Version <span id="version-info">Loading...</span></small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/js/main.js"></script>
+    
+    <!-- Version info loader -->
+    <script>
+        fetch('/api/version')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('version-info').textContent = data.version;
+            })
+            .catch(() => {
+                document.getElementById('version-info').textContent = 'v1.1.1';
+            });
+    </script>
+</body>
+</html>

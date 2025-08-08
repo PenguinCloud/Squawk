@@ -68,3 +68,42 @@ ALL user configuration for Squawk DNS is done via environment variables:
 - `CA_CERT_PATH`: CA certificate path for verification
 
 Note: ECC certificates provide equivalent security to RSA with smaller key sizes and better performance.
+
+# System Tray Client Configuration
+The desktop system tray application (dns-client/bins/systray.py) provides enhanced functionality:
+
+## System Tray Features
+- **Health Monitoring**: Real-time DNS server health checks every 30 seconds
+- **Visual Health Status**: Icon colors indicate server health (green=healthy, yellow=degraded, red=unhealthy)
+- **Smart Notifications**: Automatic alerts when DNS servers become unreachable
+- **DNS Fallback**: One-click fallback to original DHCP DNS servers for captive portals
+- **Manual Health Check**: On-demand server connectivity verification
+
+## DNS Fallback System
+- Automatically detects original DNS servers from system configuration
+- Supports Windows, macOS, and Linux platforms
+- Essential for hotel/airport WiFi captive portals
+- Restores DNS settings on application exit
+
+# Release Automation
+Automated GitHub CI/CD release pipeline with comprehensive release notes:
+
+## Release Notes Integration
+- **Script**: `.github/scripts/extract-release-notes.sh`
+- **Source**: `docs/RELEASE_NOTES.md` 
+- **Automation**: Both client and server releases automatically include full release notes
+- **Components**: Separate release processes for Go client (-client) and DNS server (-server)
+
+## Release Process
+1. Version updates in `.version` file trigger releases
+2. Automatic extraction of release notes from documentation
+3. Component-specific quick start guides included
+4. Platform-specific installation instructions
+5. GitHub releases created with comprehensive documentation
+
+# Important Notes
+- **Documentation Domain**: All documentation references should use `squawkdns.com`
+- **Web Console**: Default available at `http://localhost:8000/dns_console`
+- **Health Monitoring**: System tray provides real-time server health status
+- **DNS Validation**: All components implement RFC 1035 compliant validation
+- **Multi-Server Support**: Clients support multiple DNS servers with automatic failover

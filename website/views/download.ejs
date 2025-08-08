@@ -1,0 +1,474 @@
+
+
+<!-- Download Header -->
+<section class="py-5 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <h1 class="display-4 fw-bold mb-4">Download Squawk DNS</h1>
+                <p class="lead mb-4">
+                    Get started with secure DNS-over-HTTPS in minutes. Choose from Docker containers, 
+                    native packages, or source code.
+                </p>
+                <div class="download-stats">
+                    <span class="badge bg-light text-dark fs-6 me-3">
+                        <i class="fas fa-tag me-1"></i>
+                        Latest: <span id="latest-version">v1.1.1</span>
+                    </span>
+                    <span class="badge bg-light text-dark fs-6">
+                        <i class="fas fa-download me-1"></i>
+                        Open Source & Free
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Start -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center mb-5">
+                <h2 class="fw-bold">Quick Start Options</h2>
+                <p class="text-muted">Choose your preferred installation method</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card h-100 border-primary">
+                    <div class="card-header bg-primary text-white text-center">
+                        <i class="fab fa-docker fa-2x mb-2"></i>
+                        <h5>Docker (Recommended)</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text">
+                            Get up and running in seconds with our multi-architecture Docker containers.
+                        </p>
+                        <div class="code-example bg-dark text-light rounded p-3 mb-3">
+<pre class="mb-0"><code># DNS Server (Development)
+docker run -p 8080:8080 -p 8000:8000 \
+  penguincloud/squawk-dns-server:latest
+
+# Go Client with DNS Forwarding
+docker run -p 53:53/udp -p 53:53/tcp \
+  -e SQUAWK_SERVER_URL=https://your-server:8443 \
+  -e SQUAWK_AUTH_TOKEN=your-token \
+  penguincloud/squawk-dns-client:latest forward -v</code></pre>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="https://hub.docker.com/u/penguincloud" class="btn btn-primary w-100" target="_blank">
+                                <i class="fab fa-docker me-2"></i>
+                                View on Docker Hub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card h-100 border-success">
+                    <div class="card-header bg-success text-white text-center">
+                        <i class="fas fa-box fa-2x mb-2"></i>
+                        <h5>Native Packages</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text">
+                            Platform-specific packages with systemd/launchd integration and automatic updates.
+                        </p>
+                        <div class="package-options mb-3">
+                            <div class="mb-2">
+                                <i class="fab fa-linux text-warning me-2"></i>
+                                <strong>Linux:</strong> .deb packages for Ubuntu/Debian
+                            </div>
+                            <div class="mb-2">
+                                <i class="fab fa-apple text-secondary me-2"></i>
+                                <strong>macOS:</strong> Universal binaries (Intel + Apple Silicon)
+                            </div>
+                            <div class="mb-2">
+                                <i class="fab fa-windows text-primary me-2"></i>
+                                <strong>Windows:</strong> Native executables
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="https://github.com/penguincloud/squawk/releases/latest" class="btn btn-success w-100" target="_blank">
+                                <i class="fas fa-download me-2"></i>
+                                Download Packages
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card h-100 border-warning">
+                    <div class="card-header bg-warning text-dark text-center">
+                        <i class="fab fa-github fa-2x mb-2"></i>
+                        <h5>Source Code</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text">
+                            Build from source for custom modifications or contribute to the project.
+                        </p>
+                        <div class="code-example bg-dark text-light rounded p-3 mb-3">
+<pre class="mb-0"><code># Clone repository
+git clone https://github.com/penguincloud/squawk.git
+cd squawk
+
+# Build Go client
+cd dns-client-go && make build
+
+# Run Python server
+cd dns-server && python bins/server.py</code></pre>
+                        </div>
+                        <div class="mt-auto">
+                            <a href="https://github.com/penguincloud/squawk" class="btn btn-warning w-100" target="_blank">
+                                <i class="fab fa-github me-2"></i>
+                                View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Detailed Downloads -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="fw-bold text-center mb-5">Detailed Download Options</h2>
+                
+                <!-- Go Client Downloads -->
+                <div class="download-section mb-5">
+                    <h3><i class="fas fa-rocket text-primary me-2"></i>Go Client (High Performance)</h3>
+                    <p class="text-muted mb-4">
+                        ~10ms cold start, single binary, cross-platform DNS client with local forwarding capabilities.
+                    </p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Platform</th>
+                                    <th>Architecture</th>
+                                    <th>Package Type</th>
+                                    <th>Download</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fab fa-linux text-warning me-2"></i>Linux</td>
+                                    <td>AMD64</td>
+                                    <td>Debian Package</td>
+                                    <td>
+                                        <a href="https://github.com/penguincloud/squawk/releases/latest/download/squawk-dns-client_1.1.1_amd64.deb" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download me-1"></i>
+                                            .deb
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fab fa-linux text-warning me-2"></i>Linux</td>
+                                    <td>ARM64</td>
+                                    <td>Debian Package</td>
+                                    <td>
+                                        <a href="https://github.com/penguincloud/squawk/releases/latest/download/squawk-dns-client_1.1.1_arm64.deb" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download me-1"></i>
+                                            .deb
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fab fa-apple text-secondary me-2"></i>macOS</td>
+                                    <td>Universal</td>
+                                    <td>Binary Archive</td>
+                                    <td>
+                                        <a href="https://github.com/penguincloud/squawk/releases/latest/download/squawk-dns-client-1.1.1-darwin-universal.tar.gz" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download me-1"></i>
+                                            .tar.gz
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fab fa-windows text-primary me-2"></i>Windows</td>
+                                    <td>AMD64</td>
+                                    <td>ZIP Archive</td>
+                                    <td>
+                                        <a href="https://github.com/penguincloud/squawk/releases/latest/download/squawk-dns-client-1.1.1-windows-amd64.zip" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download me-1"></i>
+                                            .zip
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Docker Images -->
+                <div class="download-section mb-5">
+                    <h3><i class="fab fa-docker text-info me-2"></i>Docker Images</h3>
+                    <p class="text-muted mb-4">
+                        Multi-architecture container images for easy deployment and orchestration.
+                    </p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Image Name</th>
+                                    <th>Architectures</th>
+                                    <th>Pull Command</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>DNS Server (Development)</td>
+                                    <td><code>penguincloud/squawk-dns-server</code></td>
+                                    <td>linux/amd64, linux/arm64</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info copy-btn" data-copy="docker pull penguincloud/squawk-dns-server:latest">
+                                            <i class="fas fa-copy me-1"></i>
+                                            Copy
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>DNS Server (Production)</td>
+                                    <td><code>penguincloud/squawk-dns-server-prod</code></td>
+                                    <td>linux/amd64, linux/arm64</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info copy-btn" data-copy="docker pull penguincloud/squawk-dns-server-prod:latest">
+                                            <i class="fas fa-copy me-1"></i>
+                                            Copy
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Go Client</td>
+                                    <td><code>penguincloud/squawk-dns-client</code></td>
+                                    <td>linux/amd64, linux/arm64</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info copy-btn" data-copy="docker pull penguincloud/squawk-dns-client:latest">
+                                            <i class="fas fa-copy me-1"></i>
+                                            Copy
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Python Client</td>
+                                    <td><code>penguincloud/squawk-dns-client-python</code></td>
+                                    <td>linux/amd64, linux/arm64</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info copy-btn" data-copy="docker pull penguincloud/squawk-dns-client-python:latest">
+                                            <i class="fas fa-copy me-1"></i>
+                                            Copy
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Installation Instructions -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="fw-bold text-center mb-5">Installation Instructions</h2>
+                
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fab fa-linux me-2"></i>Linux (Debian/Ubuntu)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="installation-steps">
+                                    <div class="step mb-3">
+                                        <h6>1. Download Package</h6>
+                                        <div class="code-block bg-dark text-light rounded p-2">
+                                            <small><code>wget https://github.com/penguincloud/squawk/releases/latest/download/squawk-dns-client_1.1.1_amd64.deb</code></small>
+                                        </div>
+                                    </div>
+                                    <div class="step mb-3">
+                                        <h6>2. Install Package</h6>
+                                        <div class="code-block bg-dark text-light rounded p-2">
+                                            <small><code>sudo dpkg -i squawk-dns-client_1.1.1_amd64.deb</code></small>
+                                        </div>
+                                    </div>
+                                    <div class="step mb-3">
+                                        <h6>3. Enable Service</h6>
+                                        <div class="code-block bg-dark text-light rounded p-2">
+                                            <small><code>sudo systemctl enable --now squawk-dns-client</code></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0"><i class="fab fa-apple me-2"></i>macOS</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="installation-steps">
+                                    <div class="step mb-3">
+                                        <h6>1. Download Archive</h6>
+                                        <div class="code-block bg-dark text-light rounded p-2">
+                                            <small><code>wget https://github.com/penguincloud/squawk/releases/latest/download/squawk-dns-client-1.1.1-darwin-universal.tar.gz</code></small>
+                                        </div>
+                                    </div>
+                                    <div class="step mb-3">
+                                        <h6>2. Extract Binary</h6>
+                                        <div class="code-block bg-dark text-light rounded p-2">
+                                            <small><code>tar -xzf squawk-dns-client-1.1.1-darwin-universal.tar.gz</code></small>
+                                        </div>
+                                    </div>
+                                    <div class="step mb-3">
+                                        <h6>3. Install to PATH</h6>
+                                        <div class="code-block bg-dark text-light rounded p-2">
+                                            <small><code>chmod +x squawk-dns-client && sudo mv squawk-dns-client /usr/local/bin/</code></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Docker Compose -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="fw-bold text-center mb-4">Complete Stack with Docker Compose</h2>
+                <p class="text-center text-muted mb-4">
+                    Deploy the entire Squawk DNS infrastructure with a single command
+                </p>
+                
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fab fa-docker me-2"></i>docker-compose.yml</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="code-example bg-dark text-light rounded p-3 mb-3">
+<pre><code>version: '3.8'
+services:
+  dns-server:
+    image: penguincloud/squawk-dns-server:latest
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    environment:
+      - ENABLE_MTLS=true
+      - USE_NEW_AUTH=true
+      - ENABLE_BLACKLIST=true
+    volumes:
+      - ./certs:/app/certs
+      - ./data:/app/data
+    
+  dns-client:
+    image: penguincloud/squawk-dns-client:latest
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    environment:
+      - SQUAWK_SERVER_URL=https://dns-server:8080
+      - SQUAWK_AUTH_TOKEN=your-secure-token
+    depends_on:
+      - dns-server</code></pre>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-outline-info copy-btn" data-copy="curl -o docker-compose.yml https://raw.githubusercontent.com/penguincloud/squawk/main/docker-compose.yml">
+                                <i class="fas fa-download me-2"></i>
+                                Download docker-compose.yml
+                            </button>
+                            <div>
+                                <span class="badge bg-info me-2">DNS Server</span>
+                                <span class="badge bg-success">Go Client</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Verification -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="fw-bold text-center mb-4">Verify Your Downloads</h2>
+                <p class="text-center text-muted mb-4">
+                    All releases include SHA256 checksums for security verification
+                </p>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-shield-alt me-2"></i>Security Note</h6>
+                    <p class="mb-2">
+                        Download the <code>SHA256SUMS</code> file from the release page and verify your downloads:
+                    </p>
+                    <div class="code-block bg-dark text-light rounded p-2">
+                        <small><code>sha256sum -c SHA256SUMS</code></small>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <a href="https://github.com/penguincloud/squawk/releases/latest/download/SHA256SUMS" class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-2"></i>
+                        Download SHA256SUMS
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Next Steps -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="fw-bold mb-4">What's Next?</h2>
+                <p class="lead mb-4">
+                    After downloading, check out our documentation for configuration guides and examples.
+                </p>
+                
+                <div class="next-steps-buttons">
+                    <a href="/documentation" class="btn btn-light btn-lg me-3">
+                        <i class="fas fa-book me-2"></i>
+                        Read Documentation
+                    </a>
+                    <a href="https://github.com/penguincloud/squawk/blob/main/README.md" class="btn btn-outline-light btn-lg me-3" target="_blank">
+                        <i class="fas fa-rocket me-2"></i>
+                        Quick Start Guide
+                    </a>
+                    <a href="/contact" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Get Help
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

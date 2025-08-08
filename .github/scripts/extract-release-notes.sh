@@ -99,7 +99,7 @@ High-performance DNS-over-HTTPS ${COMPONENT} with comprehensive security feature
 - Enterprise-grade security features
 - Cross-platform support
 
-For more information, visit the [GitHub repository](https://github.com/\${GITHUB_REPOSITORY}).
+For more information, visit the [GitHub repository](https://github.com/\${GITHUB_REPOSITORY}) or [documentation](https://docs.squawkdns.com).
 EOF
 fi
 

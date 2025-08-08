@@ -611,3 +611,9 @@ See LICENSE.md in the parent directory for licensing information.
 6. Submit a pull request
 
 For more information, see the main project documentation.
+
+## Resources
+
+- **Documentation**: [docs.squawkdns.com](https://docs.squawkdns.com)
+- **GitHub Issues**: [Report Issues](https://github.com/PenguinCloud/Squawk/issues)
+- **Main Project**: [Squawk DNS System](../README.md)

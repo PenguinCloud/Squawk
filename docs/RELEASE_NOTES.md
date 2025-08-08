@@ -334,7 +334,7 @@ Special thanks to:
 ## 📞 Support
 
 - **GitHub Issues**: https://github.com/penguincloud/squawk/issues
-- **Documentation**: https://docs.squawk.dns
+- **Documentation**: https://docs.squawkdns.com
 - **Email**: support@penguintech.group
 
 ## 📄 License

@@ -814,7 +814,7 @@ CACHE_ENABLED=true VALKEY_URL=redis://localhost:6379 python tests/benchmark_cach
 
 ## Resources
 
-- Documentation: `./docs/`
+- Documentation: [docs.squawkdns.com](https://docs.squawkdns.com) (also available locally in `./docs/`)
 - Premium Support: https://support.penguintech.group
 - Community Issues: [GitHub Issues](https://github.com/PenguinCloud/Squawk/issues)
 

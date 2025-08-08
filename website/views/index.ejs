@@ -1,0 +1,290 @@
+
+
+<!-- Hero Section -->
+<section class="hero bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="display-4 fw-bold mb-4">
+                        Secure DNS-over-HTTPS
+                        <span class="text-warning">with Enterprise Authentication</span>
+                    </h1>
+                    <p class="lead mb-4">
+                        Squawk DNS provides enterprise-grade DNS-over-HTTPS services with mTLS authentication, 
+                        comprehensive security features, and high-performance infrastructure. Perfect for 
+                        organizations requiring secure, authenticated DNS resolution.
+                    </p>
+                    
+                    <div class="hero-features mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-shield-alt text-success me-2"></i>
+                                    <span>mTLS Authentication</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-rocket text-warning me-2"></i>
+                                    <span>High Performance</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-cogs text-info me-2"></i>
+                                    <span>Enterprise Features</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-lock text-danger me-2"></i>
+                                    <span>DNS Security</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-actions">
+                        <a href="/download" class="btn btn-light btn-lg me-3">
+                            <i class="fas fa-download me-2"></i>
+                            Download Free
+                        </a>
+                        <a href="/pricing" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-dollar-sign me-2"></i>
+                            View Pricing
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="hero-demo">
+                    <div class="card bg-dark text-light shadow-lg">
+                        <div class="card-header bg-secondary">
+                            <small><i class="fas fa-terminal me-2"></i>Squawk DNS Client</small>
+                        </div>
+                        <div class="card-body">
+                            <pre class="mb-0"><code class="language-bash"># Quick Start with Docker
+docker run -p 53:53/udp -p 53:53/tcp \
+  -e SQUAWK_SERVER_URL=https://dns.yourdomain.com:8443 \
+  -e SQUAWK_AUTH_TOKEN=your-secure-token \
+  penguincloud/squawk-dns-client:latest forward -v
+
+# Or install natively
+wget https://github.com/penguincloud/squawk/releases/download/v1.1.1-client/squawk-dns-client_1.1.1_amd64.deb
+sudo dpkg -i squawk-dns-client_1.1.1_amd64.deb
+sudo systemctl enable --now squawk-dns-client</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Overview -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center mb-5">
+                <h2 class="fw-bold">Why Choose Squawk DNS?</h2>
+                <p class="text-muted">Enterprise-grade DNS security with unmatched performance and features</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                            <i class="fas fa-shield-virus fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">Advanced Security</h5>
+                        <p class="card-text text-muted">
+                            mTLS authentication, DNS blackholing with Maravento integration, 
+                            brute force protection, and comprehensive security logging.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                            <i class="fas fa-tachometer-alt fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">High Performance</h5>
+                        <p class="card-text text-muted">
+                            HTTP/3 support, Redis caching, async processing, and Go client 
+                            with ~10ms cold start and minimal memory usage.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-warning text-white rounded-circle mx-auto mb-3">
+                            <i class="fas fa-users-cog fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">Enterprise Ready</h5>
+                        <p class="card-text text-muted">
+                            SSO integration (SAML, LDAP, OAuth2), MFA support, 
+                            web console, role-based access, and comprehensive auditing.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Architecture Overview -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">Complete DNS Security Solution</h2>
+                <p class="mb-4">
+                    Squawk DNS provides a comprehensive DNS-over-HTTPS infrastructure with both 
+                    server and client components, designed for enterprise environments requiring 
+                    authenticated and secure DNS resolution.
+                </p>
+                
+                <div class="architecture-features">
+                    <div class="mb-3">
+                        <h6><i class="fas fa-server text-primary me-2"></i>DNS Server</h6>
+                        <small class="text-muted">
+                            Complete DoH server with web console, authentication, and security features
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="fas fa-desktop text-success me-2"></i>Go Client</h6>
+                        <small class="text-muted">
+                            High-performance client with local DNS forwarding and system tray interface
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="fas fa-python text-warning me-2"></i>Python Client</h6>
+                        <small class="text-muted">
+                            Full-featured Python client with 1:1 feature parity and flexibility
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="fas fa-cogs text-info me-2"></i>System Integration</h6>
+                        <small class="text-muted">
+                            Native system services, Docker containers, and cross-platform support
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="architecture-diagram bg-light rounded p-4">
+                    <div class="text-center">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="badge bg-primary fs-6 p-2">
+                                    <i class="fas fa-globe me-2"></i>Internet
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <i class="fas fa-arrow-down text-muted"></i>
+                            </div>
+                            <div class="col-12">
+                                <div class="badge bg-danger fs-6 p-2">
+                                    <i class="fas fa-shield-alt me-2"></i>mTLS + Authentication
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <i class="fas fa-arrow-down text-muted"></i>
+                            </div>
+                            <div class="col-12">
+                                <div class="badge bg-success fs-6 p-2">
+                                    <i class="fas fa-server me-2"></i>Squawk DNS Server
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <i class="fas fa-arrow-down text-muted"></i>
+                            </div>
+                            <div class="col-6">
+                                <div class="badge bg-warning fs-6 p-2">
+                                    <i class="fas fa-desktop me-2"></i>Go Client
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="badge bg-info fs-6 p-2">
+                                    <i class="fas fa-python me-2"></i>Python Client
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-warning">10ms</h3>
+                    <p class="mb-0">Go Client Cold Start</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-warning">1000+</h3>
+                    <p class="mb-0">Requests per Second</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-warning">15MB</h3>
+                    <p class="mb-0">Memory Usage</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-warning">2M+</h3>
+                    <p class="mb-0">Blocked Domains</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <h2 class="fw-bold mb-4">Ready to Secure Your DNS?</h2>
+                <p class="lead text-muted mb-4">
+                    Get started with Squawk DNS today. Deploy in minutes with Docker or native packages.
+                </p>
+                
+                <div class="cta-buttons">
+                    <a href="/download" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-download me-2"></i>
+                        Download Free Version
+                    </a>
+                    <a href="/pricing" class="btn btn-outline-primary btn-lg me-3">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        View Premium Plans
+                    </a>
+                    <a href="/contact" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-envelope me-2"></i>
+                        Contact Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
