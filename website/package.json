@@ -1,0 +1,40 @@
+{
+  "name": "squawk-dns-website",
+  "version": "1.1.1",
+  "description": "Squawk DNS - Official Website and Documentation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "npm install",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "dns",
+    "dns-over-https",
+    "doh",
+    "security",
+    "privacy",
+    "mtls",
+    "authentication"
+  ],
+  "author": "PenguinCloud",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "highlight.js": "^11.9.0",
+    "marked": "^9.1.2",
+    "serve-favicon": "^2.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
