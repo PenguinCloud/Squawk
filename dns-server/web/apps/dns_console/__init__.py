@@ -51,9 +51,33 @@ db.define_table('query_logs',
     Field('token_id', 'reference tokens', ondelete='SET NULL'),
     Field('domain_queried', 'string', length=255),
     Field('query_type', 'string', length=10),
-    Field('status', 'string', length=20),  # allowed, denied, error
+    Field('status', 'string', length=20),  # allowed, denied, error, blocked
     Field('client_ip', 'string', length=45),
     Field('timestamp', 'datetime', default=datetime.now),
+)
+
+db.define_table('blocked_domains',
+    Field('domain', 'string', length=255, unique=True, notnull=True,
+          requires=[IS_NOT_EMPTY(), 
+                   IS_NOT_IN_DB(db, 'blocked_domains.domain'),
+                   IS_MATCH(r'^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$',
+                           error_message='Invalid domain format')]),
+    Field('reason', 'text'),
+    Field('added_at', 'datetime', default=datetime.now, writable=False),
+    Field('added_by', 'string', length=100),
+    format='%(domain)s'
+)
+
+db.define_table('blocked_ips',
+    Field('ip', 'string', length=45, unique=True, notnull=True,
+          requires=[IS_NOT_EMPTY(),
+                   IS_NOT_IN_DB(db, 'blocked_ips.ip'),
+                   IS_MATCH(r'^(\d{1,3}\.){3}\d{1,3}$|^([0-9a-fA-F]{0,4}:){7}[0-9a-fA-F]{0,4}$',
+                           error_message='Invalid IP format')]),
+    Field('reason', 'text'),
+    Field('added_at', 'datetime', default=datetime.now, writable=False),
+    Field('added_by', 'string', length=100),
+    format='%(ip)s'
 )
 
 # Create indexes for better performance
@@ -318,6 +342,81 @@ def permission_toggle():
     
     db.commit()
     return dict(success=True, new_state=new_state)
+
+@action('blacklist')
+@action.uses('blacklist.html', db)
+def blacklist_management():
+    """Manage blocked domains and IPs"""
+    blocked_domains = db(db.blocked_domains).select(orderby=~db.blocked_domains.added_at)
+    blocked_ips = db(db.blocked_ips).select(orderby=~db.blocked_ips.added_at)
+    
+    # Get Maravento blacklist status
+    import os
+    blacklist_enabled = os.getenv('ENABLE_BLACKLIST', 'false').lower() == 'true'
+    update_interval = int(os.getenv('BLACKLIST_UPDATE_HOURS', '24'))
+    
+    return dict(
+        blocked_domains=blocked_domains,
+        blocked_ips=blocked_ips,
+        blacklist_enabled=blacklist_enabled,
+        update_interval=update_interval
+    )
+
+@action('blacklist/domain/add', method=['POST'])
+@action.uses(db)
+def blacklist_domain_add():
+    """Add a domain to the blacklist"""
+    domain = request.forms.get('domain')
+    reason = request.forms.get('reason', 'Manual block')
+    added_by = request.forms.get('added_by', 'Admin')
+    
+    try:
+        db.blocked_domains.insert(
+            domain=domain.lower(),
+            reason=reason,
+            added_by=added_by
+        )
+        db.commit()
+        redirect(URL('blacklist'))
+    except Exception as e:
+        response.flash = f"Error adding domain: {str(e)}"
+        redirect(URL('blacklist'))
+
+@action('blacklist/ip/add', method=['POST'])
+@action.uses(db)
+def blacklist_ip_add():
+    """Add an IP to the blacklist"""
+    ip = request.forms.get('ip')
+    reason = request.forms.get('reason', 'Manual block')
+    added_by = request.forms.get('added_by', 'Admin')
+    
+    try:
+        db.blocked_ips.insert(
+            ip=ip,
+            reason=reason,
+            added_by=added_by
+        )
+        db.commit()
+        redirect(URL('blacklist'))
+    except Exception as e:
+        response.flash = f"Error adding IP: {str(e)}"
+        redirect(URL('blacklist'))
+
+@action('blacklist/domain/delete/<domain_id:int>')
+@action.uses(db)
+def blacklist_domain_delete(domain_id):
+    """Remove a domain from the blacklist"""
+    db(db.blocked_domains.id == domain_id).delete()
+    db.commit()
+    redirect(URL('blacklist'))
+
+@action('blacklist/ip/delete/<ip_id:int>')
+@action.uses(db)
+def blacklist_ip_delete(ip_id):
+    """Remove an IP from the blacklist"""
+    db(db.blocked_ips.id == ip_id).delete()
+    db.commit()
+    redirect(URL('blacklist'))
 
 @action('logs')
 @action.uses('logs.html', db)
