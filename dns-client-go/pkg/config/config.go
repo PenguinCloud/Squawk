@@ -28,12 +28,15 @@ func DefaultConfig() *AppConfig {
 		RecordType: "A",
 		LogLevel:   "INFO",
 		Client: &client.Config{
-			ServerURL:  "https://dns.google/resolve",
-			AuthToken:  "",
-			ClientCert: "",
-			ClientKey:  "",
-			CaCert:     "",
-			VerifySSL:  true,
+			ServerURL:   "https://dns.google/resolve",
+			ServerURLs:  []string{},
+			AuthToken:   "",
+			ClientCert:  "",
+			ClientKey:   "",
+			CaCert:      "",
+			VerifySSL:   true,
+			MaxRetries:  0, // Will be set to len(servers) * 2 by default
+			RetryDelay:  2, // seconds
 		},
 		Forwarder: &forwarder.Config{
 			UDPAddress: "127.0.0.1:53",
@@ -100,6 +103,28 @@ func loadFromEnv(config *AppConfig) {
 	// Client configuration
 	if serverURL := os.Getenv("SQUAWK_SERVER_URL"); serverURL != "" {
 		config.Client.ServerURL = serverURL
+	}
+	
+	// Multiple server URLs (comma-separated)
+	if serverURLs := os.Getenv("SQUAWK_SERVER_URLS"); serverURLs != "" {
+		urls := strings.Split(serverURLs, ",")
+		for i, url := range urls {
+			urls[i] = strings.TrimSpace(url)
+		}
+		config.Client.ServerURLs = urls
+	}
+	
+	// Retry configuration
+	if maxRetries := os.Getenv("SQUAWK_MAX_RETRIES"); maxRetries != "" {
+		if retries, err := strconv.Atoi(maxRetries); err == nil && retries > 0 {
+			config.Client.MaxRetries = retries
+		}
+	}
+	
+	if retryDelay := os.Getenv("SQUAWK_RETRY_DELAY"); retryDelay != "" {
+		if delay, err := strconv.Atoi(retryDelay); err == nil && delay > 0 {
+			config.Client.RetryDelay = delay
+		}
 	}
 	if authToken := os.Getenv("SQUAWK_AUTH_TOKEN"); authToken != "" {
 		config.Client.AuthToken = authToken
@@ -215,6 +240,9 @@ func GetEnvVarList() []string {
 		"SQUAWK_DOMAIN",
 		"SQUAWK_RECORD_TYPE", 
 		"SQUAWK_SERVER_URL",
+		"SQUAWK_SERVER_URLS",
+		"SQUAWK_MAX_RETRIES", 
+		"SQUAWK_RETRY_DELAY",
 		"SQUAWK_AUTH_TOKEN",
 		"SQUAWK_CLIENT_CERT",
 		"SQUAWK_CLIENT_KEY",

@@ -204,6 +204,15 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
 
+      # Extract release notes from RELEASE_NOTES.md
+      - name: Extract Release Notes
+        if: steps.tag_check.outputs.EXISTS == 'false'
+        run: |
+          chmod +x .github/scripts/extract-release-notes.sh
+          GITHUB_REPOSITORY="${{ github.repository }}" \
+          GITHUB_SHA="${{ github.sha }}" \
+          .github/scripts/extract-release-notes.sh server "${{ steps.version.outputs.VERSION }}" release_body.md
+
       # Create GitHub Release for server
       - name: Create Server Release
         if: steps.tag_check.outputs.EXISTS == 'false'
@@ -216,162 +225,7 @@ jobs:
           release_name: Squawk DNS Server v${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
-          body: |
-            # Squawk DNS Server v${{ steps.version.outputs.VERSION }}
-            
-            Complete DNS-over-HTTPS server system with web console, authentication, and comprehensive security features.
-            
-            ## Server Features
-            
-            ### Core DNS Server
-            - DNS-over-HTTPS proxy with HTTP/3 support
-            - High-performance async processing with multi-threading
-            - DNS blackholing with Maravento blacklist integration
-            - Redis/Valkey caching with configurable TTL
-            - Comprehensive request logging with real IP detection
-            - UDP syslog forwarding capability
-            
-            ### Security & Authentication
-            - mTLS support with automatic ECC certificate generation
-            - Dual authentication (Bearer token + client certificate)
-            - Google Authenticator MFA integration
-            - Single Sign-On (SAML, LDAP, OAuth2)
-            - Configurable brute force protection
-            - Email notifications for security events
-            - Redis/Valkey TLS and authentication support
-            
-            ### Web Console
-            - Admin portal for domain/IP blocking management
-            - mTLS certificate bundle downloads
-            - User management with role-based access
-            - Real-time monitoring and statistics
-            - Configuration management interface
-            
-            ### Python Client
-            - Feature parity with Go client
-            - DNS forwarding (UDP/TCP to DoH)
-            - mTLS and bearer token authentication
-            - Configuration via files and environment variables
-            
-            ## Docker Images
-            
-            ### Development Server
-            ```bash
-            docker run -p 8080:8080 -p 8000:8000 \
-              penguincloud/squawk-dns-server:${{ steps.version.outputs.VERSION }}
-            ```
-            
-            ### Production Server
-            ```bash
-            docker run -p 8080:8080 \
-              -e SQUAWK_ENV=production \
-              -e SQUAWK_LOG_LEVEL=INFO \
-              penguincloud/squawk-dns-server-prod:${{ steps.version.outputs.VERSION }}
-            ```
-            
-            ### Python Client
-            ```bash
-            docker run -p 53:53/udp -p 53:53/tcp \
-              -e DNS_SERVER=https://your-server:8080 \
-              -e AUTH_TOKEN=your-token \
-              penguincloud/squawk-dns-client-python:${{ steps.version.outputs.VERSION }}
-            ```
-            
-            ### Testing Environment
-            ```bash
-            docker run penguincloud/squawk-dns-testing:${{ steps.version.outputs.VERSION }}
-            ```
-            
-            ## Docker Compose Deployment
-            
-            ```bash
-            # Download complete docker-compose setup
-            curl -o docker-compose.yml https://raw.githubusercontent.com/${{ github.repository }}/main/docker-compose.yml
-            
-            # Start complete system
-            docker-compose up -d
-            
-            # With PostgreSQL
-            docker-compose --profile postgres up -d
-            
-            # With monitoring
-            docker-compose --profile monitoring up -d
-            ```
-            
-            ## Environment Variables
-            
-            ### Server Configuration
-            ```bash
-            SQUAWK_ENV=production
-            SQUAWK_PORT=8080
-            SQUAWK_CONSOLE_PORT=8000
-            ENABLE_MTLS=true
-            ENABLE_BLACKLIST=true
-            MARAVENTO_URL=https://github.com/maravento/blackweb
-            ```
-            
-            ### Security Settings
-            ```bash
-            USE_NEW_AUTH=true
-            ENABLE_MFA=true
-            BRUTE_FORCE_MAX_ATTEMPTS=5
-            BRUTE_FORCE_LOCKOUT_MINUTES=30
-            SMTP_SERVER=smtp.example.com
-            SMTP_PORT=587
-            SMTP_USERNAME=alerts@example.com
-            ```
-            
-            ### Cache Configuration
-            ```bash
-            CACHE_TYPE=redis
-            REDIS_URL=rediss://redis:6379
-            REDIS_PASSWORD=your-redis-password
-            CACHE_TTL=300
-            ```
-            
-            ## GitHub Container Registry
-            All images are also available at:
-            - `ghcr.io/${{ github.repository }}-server:${{ steps.version.outputs.VERSION }}`
-            - `ghcr.io/${{ github.repository }}-server-prod:${{ steps.version.outputs.VERSION }}`
-            - `ghcr.io/${{ github.repository }}-client-python:${{ steps.version.outputs.VERSION }}`
-            - `ghcr.io/${{ github.repository }}-testing:${{ steps.version.outputs.VERSION }}`
-            
-            ## Security Considerations
-            
-            1. **Always use TLS/mTLS** in production environments
-            2. **Enable Redis/Valkey authentication and TLS** for cache security
-            3. **Configure brute force protection** to prevent authentication attacks
-            4. **Set up email notifications** for security event monitoring
-            5. **Regularly update blacklists** for DNS filtering effectiveness
-            6. **Monitor logs** for suspicious DNS query patterns
-            7. **Use strong authentication tokens** and rotate them regularly
-            
-            ## Quick Start
-            
-            ### Minimal Setup
-            ```bash
-            # Start server with default settings
-            docker run -p 8080:8080 -p 8000:8000 \
-              penguincloud/squawk-dns-server:${{ steps.version.outputs.VERSION }}
-            
-            # Access web console
-            open http://localhost:8000
-            ```
-            
-            ### Production Setup
-            ```bash
-            # Create production environment
-            echo "SQUAWK_ENV=production" > .env
-            echo "ENABLE_MTLS=true" >> .env
-            echo "USE_NEW_AUTH=true" >> .env
-            echo "ENABLE_MFA=true" >> .env
-            
-            # Start production server
-            docker run --env-file .env -p 8080:8080 \
-              penguincloud/squawk-dns-server-prod:${{ steps.version.outputs.VERSION }}
-            ```
-            
-            Built from commit: ${{ github.sha }}
+          body_path: release_body.md
 
   # Notification job
   notify:

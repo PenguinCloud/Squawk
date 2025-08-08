@@ -57,23 +57,29 @@ make package
 ### Basic DNS Query
 
 ```bash
-# Simple DNS query
+# Simple DNS query (uses Google DNS by default)
 ./squawk-dns-client -d example.com
 
 # Query specific record type
 ./squawk-dns-client -d example.com -t AAAA
 
-# With authentication
-./squawk-dns-client -d example.com -s https://dns.example.com:8443 -a your-token-here
+# Using public DNS providers (automatic path normalization)
+./squawk-dns-client -d example.com -s https://dns.google.com
+./squawk-dns-client -d example.com -s https://cloudflare-dns.com
+./squawk-dns-client -d example.com -s https://1.1.1.1
+./squawk-dns-client -d example.com -s https://dns.quad9.net
+
+# With authentication (use IP address for custom servers)
+./squawk-dns-client -d example.com -s https://192.168.1.100:8443 -a your-token-here
 ```
 
 ### mTLS Authentication
 
 ```bash
-# Using mTLS with client certificates
+# Using mTLS with client certificates (use IP address for custom servers)
 ./squawk-dns-client \
   -d example.com \
-  -s https://dns.example.com:8443 \
+  -s https://192.168.1.100:8443 \
   -a your-bearer-token \
   --ca-cert ca.crt \
   --client-cert client.crt \
@@ -83,14 +89,62 @@ make package
 ### DNS Forwarding
 
 ```bash
-# Start DNS forwarder (requires sudo for port 53)
-sudo ./squawk-dns-client forward -s https://dns.example.com:8443 -a your-token
+# Start DNS forwarder (requires sudo for port 53, use IP address to prevent loops)
+sudo ./squawk-dns-client forward -s https://192.168.1.100:8443 -a your-token
 
 # Forward UDP only
-sudo ./squawk-dns-client -u -s https://dns.example.com:8443
+sudo ./squawk-dns-client -u -s https://192.168.1.100:8443
 
 # Forward both UDP and TCP
-sudo ./squawk-dns-client -u -T -s https://dns.example.com:8443
+sudo ./squawk-dns-client -u -T -s https://192.168.1.100:8443
+```
+
+## Public DNS Providers
+
+The client has built-in support for major public DNS-over-HTTPS providers with automatic URL normalization:
+
+### Supported Providers
+
+| Provider | URL | Auto-Path | IP Alternative |
+|----------|-----|-----------|----------------|
+| Google DNS | `https://dns.google.com` | `/resolve` | `8.8.8.8`, `8.8.4.4` |
+| Google DNS (legacy) | `https://dns.google` | `/resolve` | `8.8.8.8`, `8.8.4.4` |
+| Cloudflare | `https://cloudflare-dns.com` | `/dns-query` | `1.1.1.1`, `1.0.0.1` |
+| Cloudflare (IP) | `https://1.1.1.1` | `/dns-query` | N/A |
+| Quad9 | `https://dns.quad9.net` | `/dns-query` | `9.9.9.9` |
+| OpenDNS | `https://doh.opendns.com` | `/dns-query` | `208.67.222.222` |
+| NextDNS | `https://dns.nextdns.io` | Varies | Varies |
+| CleanBrowsing | `https://doh.cleanbrowsing.org` | `/dns-query` | `185.228.168.168` |
+
+### Usage Examples
+
+```bash
+# Google DNS (both forms work)
+./squawk-dns-client -d example.com -s https://dns.google.com
+./squawk-dns-client -d example.com -s https://dns.google
+
+# Cloudflare (hostname or IP)
+./squawk-dns-client -d example.com -s https://cloudflare-dns.com
+./squawk-dns-client -d example.com -s https://1.1.1.1
+
+# Multiple public providers with failover
+export SQUAWK_SERVER_URLS="https://dns.google.com,https://1.1.1.1,https://dns.quad9.net"
+./squawk-dns-client -d example.com
+```
+
+### Automatic Path Correction
+
+The client automatically appends the correct path for known providers:
+- Google: `/resolve` (not `/dns-query`)
+- Cloudflare: `/dns-query`
+- Quad9: `/dns-query`
+
+This means these are equivalent:
+```bash
+# These all work correctly:
+-s https://dns.google.com
+-s https://dns.google.com/
+-s https://dns.google.com/resolve
 ```
 
 ## Configuration
@@ -101,10 +155,15 @@ All configuration options can be set via environment variables:
 
 ```bash
 # Server and authentication
-export SQUAWK_SERVER_URL=https://dns.example.com:8443
+export SQUAWK_SERVER_URL=https://192.168.1.100:8443
 export SQUAWK_AUTH_TOKEN=your-bearer-token-here
 export SQUAWK_DOMAIN=example.com
 export SQUAWK_RECORD_TYPE=A
+
+# Multiple servers with automatic failover (comma-separated)
+export SQUAWK_SERVER_URLS="https://192.168.1.100:8443,https://192.168.1.101:8443,https://10.0.0.50:8443"
+export SQUAWK_MAX_RETRIES=6
+export SQUAWK_RETRY_DELAY=2
 
 # mTLS configuration
 export SQUAWK_CLIENT_CERT=/path/to/client.crt
@@ -428,6 +487,83 @@ The Go client provides superior performance compared to the Python client:
 5. **Regularly rotate** authentication tokens and certificates
 6. **Monitor logs** for suspicious activity
 7. **Keep binaries updated** with security patches
+
+## Preventing DNS Loops
+
+⚠️ **Important**: When using DNS forwarding mode, always use IP addresses (not hostnames) for your DNS server URL to prevent infinite DNS resolution loops.
+
+### ✅ Correct Usage
+```bash
+# Use IP address for custom DNS servers
+sudo ./squawk-dns-client forward -s https://192.168.1.100:8443
+
+# IPv6 addresses are also supported
+sudo ./squawk-dns-client forward -s https://[2001:db8::1]:8443
+```
+
+### ❌ Incorrect Usage (Will Cause Loops)
+```bash
+# DON'T use hostname for custom DNS servers in forwarding mode
+sudo ./squawk-dns-client forward -s https://my-dns-server.example.com:8443
+```
+
+### Special Cases
+- **localhost** - Allowed for development
+- **Public DNS providers** - Allowed with warnings (dns.google, cloudflare-dns.com, etc.)
+- **Query-only mode** - Hostname validation is less strict since it doesn't create forwarding loops
+
+## Multiple Server Failover
+
+The Go client supports multiple DNS servers with automatic failover for high availability:
+
+### Configuration Options
+
+#### YAML Configuration
+```yaml
+client:
+  # Multiple servers with automatic failover
+  server_urls:
+    - "https://192.168.1.100:8443"
+    - "https://192.168.1.101:8443" 
+    - "https://10.0.0.50:8443"
+  
+  # Failover settings
+  max_retries: 6        # Total retry attempts (default: servers * 2)
+  retry_delay: 2        # Seconds between retries (default: 2)
+```
+
+#### Environment Variables
+```bash
+# Multiple servers (comma-separated)
+export SQUAWK_SERVER_URLS="https://192.168.1.100:8443,https://192.168.1.101:8443,https://10.0.0.50:8443"
+export SQUAWK_MAX_RETRIES=6
+export SQUAWK_RETRY_DELAY=2
+```
+
+#### Command Line
+```bash
+# Using single server
+./squawk-dns-client -d example.com -s https://192.168.1.100:8443
+
+# Multiple servers require config file or environment variables
+export SQUAWK_SERVER_URLS="https://192.168.1.100:8443,https://192.168.1.101:8443"
+./squawk-dns-client -d example.com
+```
+
+### Failover Behavior
+
+1. **Round-robin selection** - Cycles through servers in order
+2. **Automatic retry** - Tries each server multiple times
+3. **Configurable delays** - Waitable delays between attempts
+4. **Error aggregation** - Reports all server failures
+5. **Immediate success** - Returns as soon as any server responds
+
+### Use Cases
+
+- **Load balancing** across multiple DNS servers
+- **High availability** when servers go offline
+- **Geographic distribution** for reduced latency
+- **Redundancy** for critical applications
 
 ## Troubleshooting
 

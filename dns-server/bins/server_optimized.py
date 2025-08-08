@@ -518,18 +518,59 @@ async def resolve_dns_async(query, record_type='A'):
     return result
 
 def is_valid_domain(domain):
-    """Validate domain format"""
-    # Allow IP addresses
+    """Validate DNS domain name according to RFC 1035"""
+    if not domain:
+        return False
+    
+    # Allow IP addresses for reverse DNS
     if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', domain):
         return True
     
-    # Domain validation
-    pattern = re.compile(
-        r'^(?:[a-zA-Z0-9]'
-        r'(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*'
-        r'[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$'
-    )
-    return pattern.match(domain) is not None
+    # Check overall length (max 253 characters)
+    if len(domain) > 253:
+        return False
+    
+    # Remove trailing dot if present
+    domain = domain.rstrip('.')
+    
+    # Check for invalid characters
+    if re.search(r'[^a-zA-Z0-9.\-]', domain):
+        return False
+    
+    # Split into labels
+    labels = domain.split('.')
+    if not labels:
+        return False
+    
+    # DNS label validation regex
+    label_regex = re.compile(r'^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$')
+    
+    for label in labels:
+        # Check label length (max 63 characters)
+        if not label or len(label) > 63:
+            return False
+        
+        # Special cases for reverse DNS and punycode
+        if label == 'arpa' or label.startswith('xn--'):
+            continue
+            
+        # Check label format
+        if not label_regex.match(label):
+            return False
+        
+        # Check for consecutive hyphens (except in punycode)
+        if '--' in label and not label.startswith('xn--'):
+            return False
+    
+    return True
+
+def is_valid_record_type(record_type):
+    """Validate DNS record type"""
+    valid_types = {
+        'A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA', 'PTR',
+        'SRV', 'CAA', 'DNSKEY', 'DS', 'NAPTR', 'SSHFP', 'TLSA', 'ANY'
+    }
+    return record_type.upper() in valid_types
 
 async def check_token_permission_new(token_value, domain_name):
     """Check permission using new token management system"""

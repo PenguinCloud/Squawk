@@ -40,7 +40,26 @@ class DNSHandler(http.server.BaseHTTPRequestHandler):
             if not self.is_valid_domain(name):
                 print(f"Invalid domain: {name}")
                 self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
                 self.end_headers()
+                error_response = json.dumps({
+                    "Status": 400,
+                    "Comment": f"Invalid DNS domain name: {name}"
+                })
+                self.wfile.write(error_response.encode('utf-8'))
+                return
+            
+            # Validate record type
+            if not self.is_valid_record_type(dnsType):
+                print(f"Invalid record type: {dnsType}")
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                error_response = json.dumps({
+                    "Status": 400,
+                    "Comment": f"Invalid DNS record type: {dnsType}"
+                })
+                self.wfile.write(error_response.encode('utf-8'))
                 return
             
             # Check authorization
@@ -99,13 +118,57 @@ class DNSHandler(http.server.BaseHTTPRequestHandler):
         return json.dumps(result)
 
     def is_valid_domain(self, domain):
+        """Validate DNS domain name according to RFC 1035"""
         import re
-        pattern = re.compile(
-            r'^(?:[a-zA-Z0-9]'  # First character of the domain
-            r'(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)'  # Sub domain + hostname
-            r'+[a-zA-Z]{2,6}\.?$'  # First level TLD
-        )
-        return pattern.match(domain) is not None
+        
+        if not domain:
+            return False
+        
+        # Check overall length (max 253 characters)
+        if len(domain) > 253:
+            return False
+        
+        # Remove trailing dot if present
+        domain = domain.rstrip('.')
+        
+        # Check for invalid characters
+        if re.search(r'[^a-zA-Z0-9.\-]', domain):
+            return False
+        
+        # Split into labels
+        labels = domain.split('.')
+        if not labels:
+            return False
+        
+        # DNS label validation regex
+        label_regex = re.compile(r'^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$')
+        
+        for label in labels:
+            # Check label length (max 63 characters)
+            if not label or len(label) > 63:
+                return False
+            
+            # Special cases for reverse DNS and punycode
+            if label == 'arpa' or label.startswith('xn--'):
+                continue
+                
+            # Check label format
+            if not label_regex.match(label):
+                return False
+            
+            # Check for consecutive hyphens (except in punycode)
+            if '--' in label and not label.startswith('xn--'):
+                return False
+        
+        return True
+    
+    def is_valid_record_type(self, record_type):
+        """Validate DNS record type"""
+        valid_types = {
+            'A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA', 'PTR',
+            'SRV', 'CAA', 'DNSKEY', 'DS', 'NAPTR', 'SSHFP', 'TLSA', 'ANY'
+        }
+        return record_type.upper() in valid_types
     
     def check_token_permission_new(self, token_value, domain_name):
         """Check permission using new token management system"""
