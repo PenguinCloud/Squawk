@@ -1,9 +1,6 @@
 name = "squawk-dns-website"
 compatibility_date = "2024-01-15"
 
-# Build configuration for Pages
-pages_build_output_dir = "."
-
 # Environment variables for production
 [vars]
 NODE_ENV = "production"
