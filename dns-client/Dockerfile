@@ -1,5 +1,5 @@
 # DNS Client Dockerfile with Python 3.13
-FROM ubuntu:24.04
+FROM python:3.13-slim
 
 LABEL company="Penguin Tech Group LLC"
 LABEL org.opencontainers.image.authors="info@penguintech.group"
@@ -14,15 +14,8 @@ ENV PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
     TZ=UTC
 
-# Install system dependencies and Python 3.13
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa -y \
-    && apt-get update && apt-get install -y \
-    python3.13 \
-    python3.13-dev \
-    python3.13-venv \
-    python3.13-distutils \
     build-essential \
     gcc \
     libffi-dev \
@@ -34,9 +27,6 @@ RUN apt-get update && apt-get install -y \
     procps \
     ca-certificates \
     systemd \
-    && ln -sf /usr/bin/python3.13 /usr/bin/python3 \
-    && ln -sf /usr/bin/python3.13 /usr/bin/python \
-    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -52,8 +42,8 @@ WORKDIR /app/dns-client
 COPY requirements.txt ./
 
 # Install Python dependencies
-RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
-    python3.13 -m pip install -r requirements.txt
+RUN pip install --upgrade pip wheel setuptools && \
+    pip install -r requirements.txt
 
 # Copy application code
 COPY . /app/dns-client/

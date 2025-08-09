@@ -1,5 +1,5 @@
 # DNS Server Dockerfile with Python 3.13
-FROM ubuntu:24.04
+FROM python:3.13-slim
 
 LABEL company="Penguin Tech Group LLC"
 LABEL org.opencontainers.image.authors="info@penguintech.group"
@@ -15,15 +15,8 @@ ENV PYTHONUNBUFFERED=1 \
     TZ=UTC \
     SQUAWK_ENV=${SQUAWK_ENV:-production}
 
-# Install system dependencies and Python 3.13
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa -y \
-    && apt-get update && apt-get install -y \
-    python3.13 \
-    python3.13-dev \
-    python3.13-venv \
-    python3.13-distutils \
     build-essential \
     gcc \
     g++ \
@@ -45,9 +38,6 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     ca-certificates \
     git \
-    && ln -sf /usr/bin/python3.13 /usr/bin/python3 \
-    && ln -sf /usr/bin/python3.13 /usr/bin/python \
-    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -62,15 +52,15 @@ WORKDIR /app/dns-server
 # Copy requirements files
 COPY requirements*.txt ./
 
-# Install Python dependencies using Python 3.13
-RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
-    python3.13 -m pip install -r requirements.txt && \
+# Install Python dependencies
+RUN pip install --upgrade pip wheel setuptools && \
+    pip install -r requirements.txt && \
     if [ "$SQUAWK_ENV" = "development" ] || [ "$SQUAWK_ENV" = "test" ] || [ -f requirements-dev.txt ]; then \
         echo "Installing development dependencies..." && \
-        python3.13 -m pip install -r requirements-dev.txt 2>/dev/null || \
+        pip install -r requirements-dev.txt 2>/dev/null || \
         echo "No dev requirements found or installation failed - continuing with production setup"; \
     fi && \
-    python3.13 -c "import sys; print(f'Python {sys.version}')" && \
+    python -c "import sys; print(f'Python {sys.version}')" && \
     echo "✓ Python dependencies installed successfully"
 
 

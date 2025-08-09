@@ -20,9 +20,8 @@ Each Python component is built as its own separate Docker container image:
 - Production Environment: Separate optimized container for production deployments
 
 # Docker Base Image Standard
-ALL Docker containers MUST use Ubuntu 24.04 LTS as the base image.
-Python 3.13 is installed from the deadsnakes PPA repository.
-This ensures consistent behavior across all container environments.
+ALL Docker containers MUST use the official Python 3.13 slim image (python:3.13-slim).
+This ensures consistent Python 3.13 behavior with reliable package installation across all container environments.
 
 # Environment Variable Configuration
 ALL user configuration for Squawk DNS is done via environment variables:
