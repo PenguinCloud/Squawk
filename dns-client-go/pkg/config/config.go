@@ -71,6 +71,11 @@ func LoadConfig(configFile string) (*AppConfig, error) {
 
 // loadFromFile loads configuration from a YAML file
 func loadFromFile(filename string, config *AppConfig) error {
+	// Validate filename to prevent directory traversal attacks
+	if strings.Contains(filename, "..") {
+		return fmt.Errorf("invalid filename: directory traversal not allowed")
+	}
+	
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
@@ -227,7 +232,7 @@ func SaveConfig(config *AppConfig, filename string) error {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
-	if err := os.WriteFile(filename, data, 0644); err != nil {
+	if err := os.WriteFile(filename, data, 0600); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 

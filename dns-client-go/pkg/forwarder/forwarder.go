@@ -12,6 +12,17 @@ import (
 	"github.com/penguincloud/squawk/dns-client-go/pkg/client"
 )
 
+// safeUint32 safely converts an int to uint32, clamping to valid range
+func safeUint32(value int) uint32 {
+	if value < 0 {
+		return 0
+	}
+	if value > 0xFFFFFFFF {
+		return 0xFFFFFFFF
+	}
+	return uint32(value)
+}
+
 // Forwarder handles DNS forwarding from traditional DNS (UDP/TCP) to DNS-over-HTTPS
 type Forwarder struct {
 	dohClient   *client.DoHClient
@@ -200,7 +211,7 @@ func (f *Forwarder) convertAnswerToRR(answer client.DNSRecord, question dns.Ques
 					Name:   question.Name,
 					Rrtype: dns.TypeA,
 					Class:  dns.ClassINET,
-					Ttl:    uint32(answer.TTL),
+					Ttl:    safeUint32(answer.TTL),
 				},
 				A: ip.To4(),
 			}
@@ -212,7 +223,7 @@ func (f *Forwarder) convertAnswerToRR(answer client.DNSRecord, question dns.Ques
 					Name:   question.Name,
 					Rrtype: dns.TypeAAAA,
 					Class:  dns.ClassINET,
-					Ttl:    uint32(answer.TTL),
+					Ttl:    safeUint32(answer.TTL),
 				},
 				AAAA: ip.To16(),
 			}
@@ -223,7 +234,7 @@ func (f *Forwarder) convertAnswerToRR(answer client.DNSRecord, question dns.Ques
 				Name:   question.Name,
 				Rrtype: dns.TypeCNAME,
 				Class:  dns.ClassINET,
-				Ttl:    uint32(answer.TTL),
+				Ttl:    safeUint32(answer.TTL),
 			},
 			Target: dns.Fqdn(answer.Data),
 		}
@@ -233,7 +244,7 @@ func (f *Forwarder) convertAnswerToRR(answer client.DNSRecord, question dns.Ques
 				Name:   question.Name,
 				Rrtype: dns.TypeMX,
 				Class:  dns.ClassINET,
-				Ttl:    uint32(answer.TTL),
+				Ttl:    safeUint32(answer.TTL),
 			},
 			Mx: dns.Fqdn(answer.Data),
 			// Priority would need to be parsed from Data if available
@@ -244,7 +255,7 @@ func (f *Forwarder) convertAnswerToRR(answer client.DNSRecord, question dns.Ques
 				Name:   question.Name,
 				Rrtype: dns.TypeTXT,
 				Class:  dns.ClassINET,
-				Ttl:    uint32(answer.TTL),
+				Ttl:    safeUint32(answer.TTL),
 			},
 			Txt: []string{answer.Data},
 		}
@@ -254,7 +265,7 @@ func (f *Forwarder) convertAnswerToRR(answer client.DNSRecord, question dns.Ques
 				Name:   question.Name,
 				Rrtype: dns.TypeNS,
 				Class:  dns.ClassINET,
-				Ttl:    uint32(answer.TTL),
+				Ttl:    safeUint32(answer.TTL),
 			},
 			Ns: dns.Fqdn(answer.Data),
 		}

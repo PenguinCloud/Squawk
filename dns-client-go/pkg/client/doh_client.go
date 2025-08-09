@@ -285,6 +285,9 @@ func NewDoHClient(config *Config) (*DoHClient, error) {
 // setupHTTPClient configures the HTTP client with mTLS support
 func (c *DoHClient) setupHTTPClient() error {
 	tlsConfig := &tls.Config{
+		// #nosec G402 - InsecureSkipVerify is controlled by verifySSL config option
+		// When verifySSL is true (default), this becomes false (secure)  
+		// When verifySSL is false (user choice), this becomes true (for testing only)
 		InsecureSkipVerify: !c.verifySSL,
 	}
 
