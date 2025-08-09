@@ -12,6 +12,14 @@ ALL Python-based builds and deployments MUST use Python 3.13. This includes:
 - Requirements files
 - Local development environments
 
+# Go Version Standard
+ALL Go-based builds and deployments MUST use Go 1.23. This includes:
+- go.mod files: `go 1.23.0` (no explicit toolchain specification)
+- CI/CD workflows: `GO_VERSION: '1.23'`
+- Local development environments
+- NEVER specify a higher toolchain version that conflicts with GitHub Actions golangci-lint
+- This prevents "Go language version used to build golangci-lint is lower than targeted Go version" errors
+
 # Docker Container Architecture
 Each Python component is built as its own separate Docker container image:
 - DNS Server: Separate container with server-specific dependencies
