@@ -3,8 +3,7 @@ site_description: Comprehensive documentation for Squawk DNS - Secure DNS-over-H
 site_author: PenguinCloud
 site_url: https://docs.squawkdns.com
 
-# Remove docs_dir to use default behavior
-# docs_dir defaults to 'docs' subdirectory, but we'll structure it differently
+docs_dir: '.'  # Use current directory for docs
 
 repo_name: penguincloud/squawk
 repo_url: https://github.com/penguincloud/squawk

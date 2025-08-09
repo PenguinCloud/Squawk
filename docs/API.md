@@ -634,7 +634,7 @@ Check if a token has permission for a specific domain.
 #### Endpoint
 
 ```
-POST /dns_console/api/permissions/check
+POST /dns_console/api/check_permission
 ```
 
 #### Request Body
@@ -650,23 +650,481 @@ POST /dns_console/api/permissions/check
 
 ```json
 {
+  "allowed": true
+}
+```
+
+#### Error Response
+
+```json
+{
+  "error": "Missing token or domain"
+}
+```
+
+## Web Console Management API
+
+The web console provides additional management endpoints for administrative operations.
+
+### Permissions Matrix Toggle
+
+Toggle permissions between tokens and domains via AJAX.
+
+#### Endpoint
+
+```
+POST /dns_console/permissions/toggle
+```
+
+#### Request Body
+
+```json
+{
+  "token_id": 1,
+  "domain_id": 2
+}
+```
+
+#### Response
+
+```json
+{
   "success": true,
-  "data": {
-    "allowed": true,
-    "reason": "direct_permission",
-    "token_name": "Production API"
+  "new_state": false
+}
+```
+
+#### Error Response
+
+```json
+{
+  "success": false,
+  "error": "Missing parameters"
+}
+```
+
+### Blacklist Management
+
+#### Add Domain to Blacklist
+
+```
+POST /dns_console/blacklist/domain/add
+```
+
+**Form Data:**
+- `domain`: Domain to block (string, required)
+- `reason`: Reason for blocking (string, optional)  
+- `added_by`: Administrator name (string, optional)
+
+#### Add IP to Blacklist
+
+```
+POST /dns_console/blacklist/ip/add
+```
+
+**Form Data:**
+- `ip`: IP address to block (string, required)
+- `reason`: Reason for blocking (string, optional)
+- `added_by`: Administrator name (string, optional)
+
+#### Remove Domain from Blacklist
+
+```
+GET /dns_console/blacklist/domain/delete/<domain_id:int>
+```
+
+#### Remove IP from Blacklist
+
+```
+GET /dns_console/blacklist/ip/delete/<ip_id:int>
+```
+
+### Certificate Management
+
+#### Initialize CA and Server Certificates
+
+```
+POST /dns_console/certificates/init
+```
+
+**Form Data:**
+- `force`: Force regeneration of existing certificates (boolean, optional)
+- `hostname`: Server hostname for certificate (string, optional)
+- `ip_addresses`: Comma-separated IP addresses (string, optional)
+
+#### Generate Client Certificate
+
+```
+POST /dns_console/certificates/client/new
+```
+
+**Form Data:**
+- `client_name`: Name for the client certificate (string, required)
+- `email`: Client email address (string, optional)
+- `force`: Force regeneration if exists (boolean, optional)
+
+#### Revoke Client Certificate
+
+```
+GET /dns_console/certificates/client/revoke/<client_name>
+```
+
+#### Download Certificates
+
+Download CA certificate:
+```
+GET /dns_console/certificates/download/ca
+```
+
+Download client certificate:
+```
+GET /dns_console/certificates/download/client/<client_name>/cert
+```
+
+Download client private key:
+```
+GET /dns_console/certificates/download/client/<client_name>/key
+```
+
+Download client PKCS#12 bundle:
+```
+GET /dns_console/certificates/download/client/<client_name>/p12
+```
+
+Download complete client bundle (ZIP):
+```
+GET /dns_console/certificates/download/client/<client_name>/bundle
+```
+
+### MFA (Multi-Factor Authentication)
+
+#### Setup MFA
+
+```
+GET/POST /dns_console/mfa/setup
+```
+
+**POST Actions:**
+- `action=generate`: Generate new MFA secret and QR code
+- `action=verify`: Verify MFA token and enable MFA  
+- `action=disable`: Disable MFA (requires password)
+
+#### Verify MFA
+
+```
+GET/POST /dns_console/mfa/verify
+```
+
+**POST Form Data:**
+- `token`: TOTP token or 8-character backup code (string, required)
+
+### SSO (Single Sign-On) Management
+
+#### SSO Configuration (Admin Only)
+
+```
+GET/POST /dns_console/admin/sso
+```
+
+**POST Actions:**
+- `action=add_provider`: Add new SSO provider
+- `action=toggle_provider`: Enable/disable SSO provider
+
+**Add Provider Form Data:**
+- `name`: Provider name (string, required)
+- `provider_type`: Type (saml, ldap, oauth2) (string, required)
+- `config`: JSON configuration (string, required)
+
+#### Initiate SSO Login
+
+```
+GET /dns_console/auth/sso/login/<provider>
+```
+
+#### LDAP Authentication
+
+```
+GET/POST /dns_console/auth/sso/ldap
+```
+
+**POST Form Data:**
+- `username`: LDAP username (string, required)
+- `password`: LDAP password (string, required)
+
+## py4web Built-in Authentication API
+
+The web console uses py4web's built-in authentication system which provides standard user management endpoints.
+
+### User Authentication
+
+#### Login
+
+```
+POST /dns_console/auth/login
+```
+
+**Form Data:**
+- `email`: User email address (string, required)
+- `password`: User password (string, required)
+
+#### Response
+
+```json
+{
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "first_name": "John",
+    "last_name": "Doe"
+  },
+  "token": "session_token_here"
+}
+```
+
+#### Logout
+
+```
+POST /dns_console/auth/logout
+```
+
+#### Register New User
+
+```
+POST /dns_console/auth/register
+```
+
+**Form Data:**
+- `email`: Email address (string, required)
+- `password`: Password (string, required)  
+- `first_name`: First name (string, optional)
+- `last_name`: Last name (string, optional)
+
+### User Profile Management
+
+#### Get Current User Profile
+
+```
+GET /dns_console/auth/profile
+```
+
+#### Response
+
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "created_on": "2025-01-01T00:00:00Z",
+  "sso": false
+}
+```
+
+#### Update User Profile
+
+```
+POST /dns_console/auth/profile
+```
+
+**Form Data:**
+- `first_name`: First name (string, optional)
+- `last_name`: Last name (string, optional)
+- `password`: New password (string, optional)
+
+### Password Management
+
+#### Change Password
+
+```
+POST /dns_console/auth/change_password
+```
+
+**Form Data:**
+- `old_password`: Current password (string, required)
+- `new_password`: New password (string, required)
+
+#### Request Password Reset
+
+```
+POST /dns_console/auth/request_reset_password
+```
+
+**Form Data:**
+- `email`: User email address (string, required)
+
+#### Reset Password
+
+```
+POST /dns_console/auth/reset_password
+```
+
+**Form Data:**
+- `token`: Password reset token (string, required)
+- `new_password`: New password (string, required)
+
+### User Management (Admin Only)
+
+#### List Users
+
+```
+GET /dns_console/auth/api/users
+```
+
+**Query Parameters:**
+- `page`: Page number (integer, optional, default: 1)
+- `per_page`: Users per page (integer, optional, default: 20)
+
+#### Response
+
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@example.com",
+      "first_name": "Admin",
+      "last_name": "User",
+      "created_on": "2025-01-01T00:00:00Z",
+      "sso": false
+    }
+  ],
+  "page": 1,
+  "per_page": 20,
+  "total": 15
+}
+```
+
+#### Get User Details
+
+```
+GET /dns_console/auth/api/users/<user_id>
+```
+
+#### Update User (Admin)
+
+```
+PUT /dns_console/auth/api/users/<user_id>
+```
+
+**JSON Body:**
+```json
+{
+  "email": "updated@example.com",
+  "first_name": "Updated",
+  "last_name": "Name",
+  "active": true
+}
+```
+
+#### Delete User (Admin)
+
+```
+DELETE /dns_console/auth/api/users/<user_id>
+```
+
+### Session Management
+
+#### Verify Session
+
+```
+GET /dns_console/auth/api/verify
+```
+
+Returns current session status and user information.
+
+#### Response
+
+```json
+{
+  "valid": true,
+  "user": {
+    "id": 1,
+    "email": "user@example.com"
   }
 }
 ```
 
-#### Permission Check Reasons
+### Group Management
 
-| Reason | Description |
-|--------|-------------|
-| direct_permission | Token has explicit permission for this domain |
-| parent_permission | Token has permission for parent domain |
-| wildcard_permission | Token has wildcard (*) permission |
-| no_permission | Token does not have access |
+#### List Groups
+
+```
+GET /dns_console/auth/api/groups
+```
+
+#### Create Group
+
+```
+POST /dns_console/auth/api/groups
+```
+
+**JSON Body:**
+```json
+{
+  "role": "admin",
+  "description": "Administrator group"
+}
+```
+
+#### Add User to Group
+
+```
+POST /dns_console/auth/api/groups/<group_id>/members
+```
+
+**JSON Body:**
+```json
+{
+  "user_id": 1
+}
+```
+
+## Main DNS Server API
+
+The main DNS server provides core DNS resolution and administrative endpoints.
+
+### DNS Resolution
+
+#### DNS-over-HTTPS Query
+
+```
+GET/POST /dns-query
+```
+
+**Query Parameters:**
+- `name`: Domain name to resolve (string, required)
+- `type`: DNS record type (string, optional, default: A)
+
+### Administrative Endpoints
+
+#### Blacklist Management
+
+```
+GET/POST/DELETE /admin/blacklist
+```
+
+Administrative interface for managing the DNS blacklist.
+
+#### Health Check
+
+```
+GET /health
+```
+
+Returns server health status and metrics.
+
+#### Response
+
+```json
+{
+  "status": "healthy",
+  "version": "1.1.2",
+  "uptime_seconds": 86400,
+  "cache_enabled": true,
+  "blacklist_enabled": true,
+  "mtls_enabled": true
+}
+```
 
 ## Monitoring & Logs API
 
