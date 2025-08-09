@@ -7,59 +7,37 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v3
     
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
-    
-    - name: Install system dependencies
+    - name: Build DNS Server Docker image for testing
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          gcc \
-          g++ \
-          libxml2-dev \
-          libxslt1-dev \
-          libldap-dev \
-          libldap2-dev \
-          libsasl2-dev \
-          libldap-common \
-          libffi-dev \
-          libssl-dev \
-          pkg-config
+        docker build -f dns-server/Dockerfile -t squawk-dns-server:test dns-server/
     
-    - name: Install Python dependencies
+    - name: Run tests inside Docker container
       run: |
-        python -m pip install --upgrade pip wheel setuptools
-        # Try full installation first
-        pip install -r dns-server/requirements.txt || \
-        (echo "::warning::Enterprise features installation failed, using base requirements" && \
-         pip install -r dns-server/requirements-base.txt)
-        # Install development/testing dependencies
-        pip install -r dns-server/requirements-dev.txt
+        docker run --rm squawk-dns-server:test python3.13 -m pytest tests/ -v
     
-    - name: Run tests
-      run: |
-        python -m pytest dns-server/tests/ -v
-    
-  docker-build:
+  docker-multi-build:
     runs-on: ubuntu-latest
+    needs: build-and-test
     
     steps:
     - uses: actions/checkout@v3
     
-    - name: Build Docker image
+    - name: Build multi-stage Docker image
       run: |
-        docker build -t squawk-dns:test .
+        docker build -t squawk-dns-unified:test .
     
-    - name: Test Docker image
+    - name: Test unified Docker image - DNS Server
       run: |
-        docker run --rm squawk-dns:test python --version
-        docker run --rm squawk-dns:test python -c "import dns.resolver; print('DNS module OK')"
+        docker run --rm squawk-dns-unified:test --target dns-server python3.13 --version
+        docker run --rm squawk-dns-unified:test --target dns-server python3.13 -c "import dns.resolver; print('DNS Server OK')"
+    
+    - name: Test unified Docker image - DNS Client  
+      run: |
+        docker run --rm squawk-dns-unified:test --target dns-client python3.13 --version
+        docker run --rm squawk-dns-unified:test --target dns-client python3.13 -c "import dns.resolver; print('DNS Client OK')"
