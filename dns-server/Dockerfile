@@ -1,5 +1,5 @@
 # DNS Server Dockerfile with Python 3.13
-FROM python:3.13-slim
+FROM ubuntu:24.04
 
 LABEL company="Penguin Tech Group LLC"
 LABEL org.opencontainers.image.authors="info@penguintech.group"
@@ -15,18 +15,28 @@ ENV PYTHONUNBUFFERED=1 \
     TZ=UTC \
     SQUAWK_ENV=${SQUAWK_ENV:-production}
 
-# Install basic build dependencies
+# Install Python 3.13 from deadsnakes PPA and basic build dependencies
 RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    curl \
+    wget \
+    ca-certificates \
+    git \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update && apt-get install -y \
+    python3.13 \
+    python3.13-dev \
+    python3.13-venv \
+    python3.13-distutils \
     build-essential \
     gcc \
     g++ \
     libffi-dev \
     libssl-dev \
     pkg-config \
-    curl \
-    wget \
-    ca-certificates \
-    git \
+    && ln -sf /usr/bin/python3.13 /usr/bin/python3 \
+    && ln -sf /usr/bin/python3.13 /usr/bin/python \
+    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install LDAP, XML and enterprise dependencies
@@ -35,10 +45,8 @@ RUN apt-get update && apt-get install -y \
     libxslt1-dev \
     libldap-dev \
     libldap2-dev \
-    libldap-2.5-0 \
     libsasl2-dev \
     libldap-common \
-    liblber-2.5-0 \
     libxmlsec1-dev \
     libxmlsec1-openssl \
     dnsutils \
@@ -60,14 +68,14 @@ WORKDIR /app/dns-server
 COPY requirements*.txt ./
 
 # Install Python dependencies
-RUN pip install --upgrade pip wheel setuptools && \
-    pip install -r requirements.txt && \
+RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
+    python3.13 -m pip install -r requirements.txt && \
     if [ "$SQUAWK_ENV" = "development" ] || [ "$SQUAWK_ENV" = "test" ] || [ -f requirements-dev.txt ]; then \
         echo "Installing development dependencies..." && \
-        pip install -r requirements-dev.txt 2>/dev/null || \
+        python3.13 -m pip install -r requirements-dev.txt 2>/dev/null || \
         echo "No dev requirements found or installation failed - continuing with production setup"; \
     fi && \
-    python -c "import sys; print(f'Python {sys.version}')" && \
+    python3.13 -c "import sys; print(f'Python {sys.version}')" && \
     echo "✓ Python dependencies installed successfully"
 
 

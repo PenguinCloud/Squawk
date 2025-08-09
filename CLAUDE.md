@@ -20,8 +20,12 @@ Each Python component is built as its own separate Docker container image:
 - Production Environment: Separate optimized container for production deployments
 
 # Docker Base Image Standard
-ALL Docker containers MUST use the official Python 3.13 slim image (python:3.13-slim).
-This ensures consistent Python 3.13 behavior with reliable package installation across all container environments.
+ALL Docker containers MUST use Ubuntu 24.04 LTS as the base image with Python 3.13 from deadsnakes PPA.
+This is REQUIRED because:
+- python-ldap compilation requires lber.h header which is missing in Debian-based images
+- Ubuntu provides proper LDAP development packages (libldap-dev, libldap2-dev, libsasl2-dev)
+- deadsnakes PPA provides reliable Python 3.13 installation on Ubuntu
+- DO NOT use python:3.13-slim or other Debian-based images due to LDAP header issues
 
 # Environment Variable Configuration
 ALL user configuration for Squawk DNS is done via environment variables:
