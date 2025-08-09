@@ -18,6 +18,12 @@ RUN apt-get update && apt-get install -y \
     libc-dev \
     libffi-dev \
     libssl-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libldap2-dev \
+    libsasl2-dev \
+    python3-dev \
+    pkg-config \
     curl \
     dnsutils \
     net-tools \
