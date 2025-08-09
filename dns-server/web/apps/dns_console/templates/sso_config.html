@@ -122,7 +122,7 @@
                                             </form>
                                             
                                             <button class="button is-small is-info" 
-                                                    onclick="showConfig([[=provider.id]], '[[=provider.config.replace("'", "\\'")]]')">
+                                                    onclick="showConfig([[=provider.id]], [[=XML(json.dumps(provider.config))]])">
                                                 View Config
                                             </button>
                                         </td>
