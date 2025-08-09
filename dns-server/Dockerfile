@@ -15,30 +15,34 @@ ENV PYTHONUNBUFFERED=1 \
     TZ=UTC \
     SQUAWK_ENV=${SQUAWK_ENV:-production}
 
-# Install system dependencies
+# Install basic build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
     g++ \
+    libffi-dev \
+    libssl-dev \
+    pkg-config \
+    curl \
+    wget \
+    ca-certificates \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install LDAP, XML and enterprise dependencies
+RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libxslt1-dev \
     libldap-dev \
     libldap2-dev \
     libsasl2-dev \
     libldap-common \
-    libffi-dev \
-    libssl-dev \
     libxmlsec1-dev \
     libxmlsec1-openssl \
-    pkg-config \
-    curl \
-    wget \
     dnsutils \
     net-tools \
     procps \
     sqlite3 \
-    ca-certificates \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user

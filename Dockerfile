@@ -13,27 +13,31 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
+# Install basic build dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     libc6-dev \
     libffi-dev \
     libssl-dev \
+    pkg-config \
+    build-essential \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install LDAP and XML dependencies
+RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libxslt1-dev \
     libldap-dev \
     libldap2-dev \
     libsasl2-dev \
     libldap-common \
-    pkg-config \
-    build-essential \
-    curl \
     dnsutils \
     net-tools \
     procps \
     sqlite3 \
-    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user

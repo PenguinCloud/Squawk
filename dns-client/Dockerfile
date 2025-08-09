@@ -14,7 +14,7 @@ ENV PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
     TZ=UTC
 
-# Install system dependencies
+# Install basic build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
@@ -22,10 +22,14 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     curl \
     wget \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install client-specific dependencies
+RUN apt-get update && apt-get install -y \
     dnsutils \
     net-tools \
     procps \
-    ca-certificates \
     systemd \
     && rm -rf /var/lib/apt/lists/*
 
