@@ -25,7 +25,7 @@
 - Git 2.20+
 - SQLite3 (for development)
 - Docker 20.10+ with Docker Compose v2 (recommended)
-- Ubuntu 22.04 LTS (for Docker builds)
+- Ubuntu 22.04 LTS (recommended/tested for Docker builds; other platforms may work)
 - Node.js 16+ (for frontend tooling)
 
 # For building from source (optional)
