@@ -1,0 +1,94 @@
+site_name: Squawk DNS Documentation
+site_description: Comprehensive documentation for Squawk DNS - Secure DNS-over-HTTPS system
+site_author: PenguinCloud
+site_url: https://docs.squawkdns.com
+
+repo_name: penguincloud/squawk
+repo_url: https://github.com/penguincloud/squawk
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7 
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Usage Guide: USAGE.md
+    - API Documentation: API.md
+  - Architecture:
+    - System Architecture: ARCHITECTURE.md
+    - Token Management: TOKEN_MANAGEMENT.md
+  - Development:
+    - Contributing Guide: CONTRIBUTING.md
+    - Development Setup: DEVELOPMENT.md
+  - Release Notes: RELEASE_NOTES.md
+  - License: LICENSE.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/penguincloud/squawk
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/penguincloud/squawk-dns-client
+
+extra_css:
+  - stylesheets/extra.css
+
+copyright: Copyright &copy; 2025 PenguinCloud. All rights reserved.
