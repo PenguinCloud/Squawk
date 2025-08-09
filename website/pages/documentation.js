@@ -58,7 +58,7 @@ export default function Documentation() {
                 <i className="fas fa-cogs fa-3x text-success mb-3"></i>
                 <h4>Configuration</h4>
                 <p className="text-muted mb-3">Learn how to configure Squawk DNS for your environment.</p>
-                <a href="https://docs.squawkdns.com/usage/" target="_blank" rel="noopener noreferrer" className="btn btn-success">
+                <a href="https://docs.squawkdns.com/getting-started/usage-guide/" target="_blank" rel="noopener noreferrer" className="btn btn-success">
                   View Guide
                 </a>
               </div>
@@ -69,7 +69,7 @@ export default function Documentation() {
                 <i className="fas fa-code fa-3x text-warning mb-3"></i>
                 <h4>API Reference</h4>
                 <p className="text-muted mb-3">Complete API documentation with examples and schemas.</p>
-                <a href="https://docs.squawkdns.com/api/" target="_blank" rel="noopener noreferrer" className="btn btn-warning">
+                <a href="https://docs.squawkdns.com/getting-started/api-documentation/" target="_blank" rel="noopener noreferrer" className="btn btn-warning">
                   API Docs
                 </a>
               </div>
@@ -80,7 +80,7 @@ export default function Documentation() {
                 <i className="fas fa-shield-alt fa-3x text-info mb-3"></i>
                 <h4>Security</h4>
                 <p className="text-muted mb-3">Security features, mTLS setup, and authentication guides.</p>
-                <a href="https://docs.squawkdns.com/architecture/" target="_blank" rel="noopener noreferrer" className="btn btn-info">
+                <a href="https://docs.squawkdns.com/architecture/system-architecture/" target="_blank" rel="noopener noreferrer" className="btn btn-info">
                   Security Guide
                 </a>
               </div>
@@ -117,7 +117,7 @@ export default function Documentation() {
                         </a>
                       </li>
                       <li className="mb-2">
-                        <a href="https://docs.squawkdns.com/usage/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href="https://docs.squawkdns.com/getting-started/usage-guide/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <i className="fas fa-arrow-right text-primary me-2"></i>Configuration Reference
                         </a>
                       </li>
@@ -127,7 +127,7 @@ export default function Documentation() {
                         </Link>
                       </li>
                       <li className="mb-2">
-                        <a href="https://docs.squawkdns.com/development/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href="https://docs.squawkdns.com/development/development-setup/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <i className="fas fa-arrow-right text-primary me-2"></i>Development Setup
                         </a>
                       </li>
@@ -149,12 +149,12 @@ export default function Documentation() {
                     <p className="text-muted mb-3">Deep dive into Squawk DNS architecture and security features.</p>
                     <ul className="list-unstyled">
                       <li className="mb-2">
-                        <a href="https://docs.squawkdns.com/architecture/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href="https://docs.squawkdns.com/architecture/system-architecture/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <i className="fas fa-arrow-right text-success me-2"></i>System Architecture
                         </a>
                       </li>
                       <li className="mb-2">
-                        <a href="https://docs.squawkdns.com/token_management/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href="https://docs.squawkdns.com/architecture/token-management/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <i className="fas fa-arrow-right text-success me-2"></i>Authentication & Authorization
                         </a>
                       </li>
@@ -164,7 +164,7 @@ export default function Documentation() {
                         </Link>
                       </li>
                       <li className="mb-2">
-                        <a href="https://docs.squawkdns.com/architecture/#mtls-configuration" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href="https://docs.squawkdns.com/architecture/system-architecture/#mtls-configuration" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <i className="fas fa-arrow-right text-success me-2"></i>mTLS Configuration
                         </a>
                       </li>
@@ -186,12 +186,12 @@ export default function Documentation() {
                     <p className="text-muted mb-3">API documentation and development resources for integration.</p>
                     <ul className="list-unstyled">
                       <li className="mb-2">
-                        <a href="https://docs.squawkdns.com/api/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href="https://docs.squawkdns.com/getting-started/api-documentation/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <i className="fas fa-arrow-right text-warning me-2"></i>REST API Reference
                         </a>
                       </li>
                       <li className="mb-2">
-                        <a href="https://docs.squawkdns.com/contributing/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href="https://docs.squawkdns.com/development/development-setup/contributing-guide/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <i className="fas fa-arrow-right text-warning me-2"></i>Contributing Guide
                         </a>
                       </li>

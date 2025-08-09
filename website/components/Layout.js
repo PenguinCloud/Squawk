@@ -109,17 +109,17 @@ export default function Layout({ children, title = 'Squawk DNS', page = '' }) {
               <div className="col-lg-2 mb-4">
                 <h6>Product</h6>
                 <ul className="list-unstyled">
-                  <li><Link href="/features" className="text-muted">Features</Link></li>
-                  <li><Link href="/pricing" className="text-muted">Pricing</Link></li>
-                  <li><Link href="/enterprise" className="text-muted">Enterprise</Link></li>
-                  <li><Link href="/download" className="text-muted">Download</Link></li>
+                  <li><Link href="/features/" className="text-muted">Features</Link></li>
+                  <li><Link href="/pricing/" className="text-muted">Pricing</Link></li>
+                  <li><Link href="/enterprise/" className="text-muted">Enterprise</Link></li>
+                  <li><Link href="/download/" className="text-muted">Download</Link></li>
                 </ul>
               </div>
               
               <div className="col-lg-2 mb-4">
                 <h6>Resources</h6>
                 <ul className="list-unstyled">
-                  <li><Link href="/documentation" className="text-muted">Documentation</Link></li>
+                  <li><Link href="/documentation/" className="text-muted">Documentation</Link></li>
                   <li><a href="https://github.com/penguincloud/squawk/issues" className="text-muted" target="_blank" rel="noopener noreferrer">GitHub Issues</a></li>
                   <li><a href="https://github.com/penguincloud/squawk/releases" className="text-muted" target="_blank" rel="noopener noreferrer">Releases</a></li>
                 </ul>
@@ -128,7 +128,7 @@ export default function Layout({ children, title = 'Squawk DNS', page = '' }) {
               <div className="col-lg-2 mb-4">
                 <h6>Company</h6>
                 <ul className="list-unstyled">
-                  <li><Link href="/contact" className="text-muted">Contact</Link></li>
+                  <li><Link href="/contact/" className="text-muted">Contact</Link></li>
                   <li><a href="https://support.penguintech.group" className="text-muted" target="_blank" rel="noopener noreferrer">Support</a></li>
                   <li><a href="mailto:sales@penguincloud.io" className="text-muted">Sales</a></li>
                 </ul>
