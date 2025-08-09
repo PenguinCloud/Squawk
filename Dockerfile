@@ -13,18 +13,22 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
+# Set environment for non-interactive apt
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC
+
 # Install system dependencies and Python 3.13
 RUN apt-get update && apt-get install -y \
     software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt-get update && apt-get install -y \
     python3.13 \
-    python3.13-pip \
     python3.13-dev \
     python3.13-venv \
+    python3.13-distutils \
     gcc \
     g++ \
-    libc-dev \
+    libc6-dev \
     libffi-dev \
     libssl-dev \
     libxml2-dev \
@@ -39,8 +43,10 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     procps \
     sqlite3 \
+    ca-certificates \
     && ln -sf /usr/bin/python3.13 /usr/bin/python3 \
     && ln -sf /usr/bin/python3.13 /usr/bin/python \
+    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user

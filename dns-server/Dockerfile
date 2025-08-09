@@ -18,12 +18,12 @@ ENV PYTHONUNBUFFERED=1 \
 # Install system dependencies and Python 3.13
 RUN apt-get update && apt-get install -y \
     software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt-get update && apt-get install -y \
     python3.13 \
-    python3.13-pip \
     python3.13-dev \
     python3.13-venv \
+    python3.13-distutils \
     build-essential \
     gcc \
     g++ \
@@ -47,6 +47,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && ln -sf /usr/bin/python3.13 /usr/bin/python3 \
     && ln -sf /usr/bin/python3.13 /usr/bin/python \
+    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
