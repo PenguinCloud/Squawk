@@ -29,7 +29,6 @@ RUN apt-get install -y \
     python3.13 \
     python3.13-dev \
     python3.13-venv \
-    python3.13-distutils \
     build-essential \
     gcc \
     g++ \
