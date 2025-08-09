@@ -69,10 +69,10 @@ COPY requirements*.txt ./
 
 # Install Python dependencies
 RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
-    python3.13 -m pip install -r requirements.txt && \
+    python3.13 -m pip install --break-system-packages -r requirements.txt && \
     if [ "$SQUAWK_ENV" = "development" ] || [ "$SQUAWK_ENV" = "test" ] || [ -f requirements-dev.txt ]; then \
         echo "Installing development dependencies..." && \
-        python3.13 -m pip install -r requirements-dev.txt 2>/dev/null || \
+        python3.13 -m pip install --break-system-packages -r requirements-dev.txt 2>/dev/null || \
         echo "No dev requirements found or installation failed - continuing with production setup"; \
     fi && \
     python3.13 -c "import sys; print(f'Python {sys.version}')" && \

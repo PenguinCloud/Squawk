@@ -70,12 +70,12 @@ COPY dns-server/requirements*.txt /app/dns-server/
 RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
     if [ -f /app/dns-server/requirements-base.txt ]; then \
         echo "Installing with fallback strategy..." && \
-        (python3.13 -m pip install -r /app/dns-server/requirements.txt 2>/dev/null && echo "Full installation successful") || \
+        (python3.13 -m pip install --break-system-packages -r /app/dns-server/requirements.txt 2>/dev/null && echo "Full installation successful") || \
         (echo "WARNING: Enterprise features failed, using base requirements..." && \
-         python3.13 -m pip install -r /app/dns-server/requirements-base.txt); \
+         python3.13 -m pip install --break-system-packages -r /app/dns-server/requirements-base.txt); \
     else \
         echo "Installing all requirements..." && \
-        python3.13 -m pip install -r /app/dns-server/requirements.txt; \
+        python3.13 -m pip install --break-system-packages -r /app/dns-server/requirements.txt; \
     fi
 
 # Copy DNS server code
@@ -109,8 +109,8 @@ RUN echo "pytest>=7.4.3" > /app/dns-client/requirements-dev.txt && \
     echo "pytest-mock>=3.12.0" >> /app/dns-client/requirements-dev.txt
 
 # Install Python dependencies
-RUN pip install --upgrade pip && \
-    python3.13 -m pip install -r /app/dns-client/requirements.txt
+RUN python3.13 -m pip install --upgrade pip && \
+    python3.13 -m pip install --break-system-packages -r /app/dns-client/requirements.txt
 
 # Copy DNS client code
 COPY dns-client/ /app/dns-client/
@@ -132,10 +132,10 @@ FROM dns-server AS testing
 USER root
 
 # Install development dependencies
-RUN python3.13 -m pip install -r /app/dns-server/requirements-dev.txt
+RUN python3.13 -m pip install --break-system-packages -r /app/dns-server/requirements-dev.txt
 
 # Install additional testing tools
-RUN python3.13 -m pip install \
+RUN python3.13 -m pip install --break-system-packages \
     safety==2.3.5 \
     bandit==1.7.5 \
     pytest-xdist==3.3.1
@@ -158,7 +158,7 @@ FROM dns-server AS production
 USER root
 
 # Install production monitoring tools
-RUN python3.13 -m pip install \
+RUN python3.13 -m pip install --break-system-packages \
     prometheus-client==0.18.0 \
     structlog==23.1.0
 

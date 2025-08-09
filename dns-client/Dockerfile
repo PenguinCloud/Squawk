@@ -56,7 +56,7 @@ COPY requirements.txt ./
 
 # Install Python dependencies
 RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
-    python3.13 -m pip install -r requirements.txt
+    python3.13 -m pip install --break-system-packages -r requirements.txt
 
 # Copy application code
 COPY . /app/dns-client/
