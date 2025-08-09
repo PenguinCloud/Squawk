@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     git \
     && add-apt-repository ppa:deadsnakes/ppa -y \
-    && apt-get update && apt-get install -y \
+    && apt-get update 
+RUN apt-get install -y \
     python3.13 \
     python3.13-dev \
     python3.13-venv \
@@ -33,8 +34,9 @@ RUN apt-get update && apt-get install -y \
     g++ \
     libffi-dev \
     libssl-dev \
-    pkg-config \
-    && ln -sf /usr/bin/python3.13 /usr/bin/python3 \
+    pkg-config 
+
+RUN ln -sf /usr/bin/python3.13 /usr/bin/python3 \
     && ln -sf /usr/bin/python3.13 /usr/bin/python \
     && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13 \
     && rm -rf /var/lib/apt/lists/*
@@ -44,6 +46,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libxslt1-dev \
     libldap-dev \
+    ldap-utils \
     libldap2-dev \
     libsasl2-dev \
     libldap-common \
@@ -53,6 +56,7 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     procps \
     sqlite3 \
+    python3.13-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
