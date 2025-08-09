@@ -4,9 +4,15 @@ Test configuration and fixtures for DNS server tests
 import pytest
 import tempfile
 import os
+import sys
 from unittest.mock import Mock, patch
 from pydal import DAL, Field
 from datetime import datetime
+
+# Add web/apps directory to Python path for importing dns_console
+web_apps_path = os.path.join(os.path.dirname(__file__), '..', 'web', 'apps')
+if web_apps_path not in sys.path:
+    sys.path.insert(0, web_apps_path)
 
 @pytest.fixture
 def temp_db():

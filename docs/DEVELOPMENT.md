@@ -24,36 +24,77 @@
 - Python 3.8 or higher
 - Git 2.20+
 - SQLite3 (for development)
-- Docker (optional, for containerized development)
+- Docker 20.10+ with Docker Compose v2 (recommended)
+- Ubuntu 22.04 LTS (for Docker builds)
 - Node.js 16+ (for frontend tooling)
+
+# For building from source (optional)
+- build-essential
+- libxml2-dev, libxslt1-dev (for SAML)
+- libldap-dev, libsasl2-dev (for LDAP)
+- pkg-config
 ```
 
-### Quick Setup
+### Quick Setup with Docker (Recommended)
 
 ```bash
-# Clone and setup
+# Clone the repository
 git clone https://github.com/PenguinCloud/Squawk.git
 cd Squawk
 
-# Setup development environment
-make setup-dev
-# OR manual setup:
-./scripts/setup-dev.sh
+# Build and start all services
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f dns-server
+
+# Run tests in Docker
+docker-compose exec dns-server python3 -m pytest tests/
+```
+
+### Building Docker Images
+
+```bash
+# Build DNS Server (Ubuntu 22.04 based)
+cd dns-server
+docker build -t squawk-dns-server:dev .
+
+# Build DNS Client (Ubuntu 22.04 based)
+cd ../dns-client
+docker build -t squawk-dns-client:dev .
+
+# Build with specific features
+docker build --build-arg ENABLE_ENTERPRISE=true -t squawk-dns-server:enterprise .
 ```
 
 ### Manual Development Setup
 
 ```bash
+# Install system dependencies (Ubuntu/Debian)
+sudo apt-get update
+sudo apt-get install -y \
+  python3-dev python3-pip python3-venv \
+  build-essential pkg-config \
+  libxml2-dev libxslt1-dev \
+  libldap-dev libsasl2-dev
+
 # Create virtual environments
 cd dns-server
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install --upgrade pip wheel setuptools
+
+# Install with fallback for enterprise features
+pip install -r requirements.txt || \
+  (echo "Enterprise features failed, using base requirements" && \
+   pip install -r requirements-base.txt)
+
 pip install -r requirements-dev.txt
 
 cd ../dns-client  
 python3 -m venv venv
 source venv/bin/activate
+pip install --upgrade pip wheel setuptools
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```

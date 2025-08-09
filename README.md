@@ -105,11 +105,45 @@ The installer will:
 - Create a system tray icon (on desktop systems)
 - Start the service automatically
 
-### Using Docker
+### Using Docker (Recommended)
+
+Squawk now uses Ubuntu 22.04 LTS as the base image with separated Docker configurations for better modularity.
+
+#### Quick Start with Docker Compose
 
 ```bash
+# Start all core services (DNS server, web console, client, and cache)
+docker-compose up -d
+
+# Start with PostgreSQL for enterprise deployments
+docker-compose --profile postgres up -d
+
+# Start with Prometheus and Grafana monitoring
+docker-compose --profile monitoring up -d
+
+# View logs
+docker-compose logs -f dns-server
+```
+
+#### Building Individual Components
+
+```bash
+# Build and run DNS server only
+cd dns-server
+docker-compose up -d
+
+# Build and run DNS client only
+cd dns-client
 docker-compose up -d
 ```
+
+#### Docker Images
+
+The project provides separate Docker images:
+- `squawk-dns-server`: DNS-over-HTTPS server with enterprise features
+- `squawk-dns-client`: DNS client forwarder
+
+Both images are based on Ubuntu 22.04 LTS and include automatic fallback for enterprise features if dependencies fail to install.
 
 ### Manual Installation
 

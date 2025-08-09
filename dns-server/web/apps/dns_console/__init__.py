@@ -59,7 +59,7 @@ SMTP_FROM_EMAIL = os.getenv('SMTP_FROM_EMAIL', 'noreply@squawk-dns.local')
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', '')
 
 # Configure auth settings
-auth.param.registration_requires_verification = True
+auth.param.registration_requires_confirmation = True
 auth.param.registration_requires_approval = not ALLOW_REGISTRATION
 auth.param.password_complexity = {
     "entropy": 50,  # Minimum entropy

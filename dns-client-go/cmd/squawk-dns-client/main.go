@@ -94,7 +94,7 @@ func runClient(cmd *cobra.Command, args []string) {
 	}
 
 	// Override config with command line flags
-	overrideConfigWithFlags(cfg)
+	overrideConfigWithFlags(cmd, cfg)
 
 	if verbose {
 		fmt.Println(cfg.String())
@@ -143,7 +143,7 @@ func loadConfiguration() (*config.AppConfig, error) {
 }
 
 // overrideConfigWithFlags overrides configuration with command line flags
-func overrideConfigWithFlags(cfg *config.AppConfig) {
+func overrideConfigWithFlags(cmd *cobra.Command, cfg *config.AppConfig) {
 	if domain != "" {
 		cfg.Domain = domain
 	}
@@ -237,7 +237,7 @@ to the configured DoH server.`,
 		}
 
 		// Override with flags
-		overrideConfigWithFlags(cfg)
+		overrideConfigWithFlags(cmd, cfg)
 
 		// Force forwarding to be enabled
 		if !udpForward && !tcpForward {

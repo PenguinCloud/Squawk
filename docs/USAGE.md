@@ -49,55 +49,108 @@ docker run -d \
 
 ## Installation Methods
 
-### Pull Docker Image
+### Docker Installation (Ubuntu 22.04 LTS Based)
+
+Squawk now uses separated Docker configurations with Ubuntu 22.04 LTS as the base image for better reliability and modularity.
+
+#### Quick Start with Docker Compose
 
 ```bash
-docker pull penguintech/squawk:latest
+# Clone the repository
+git clone https://github.com/PenguinCloud/Squawk.git
+cd Squawk
+
+# Start all core services (DNS server, web console, client, cache)
+docker-compose up -d
+
+# Start with PostgreSQL for enterprise
+docker-compose --profile postgres up -d
+
+# Start with monitoring (Prometheus/Grafana)
+docker-compose --profile monitoring up -d
+
+# View logs
+docker-compose logs -f dns-server
 ```
 
-### Run with Docker
+#### Building Individual Components
 
 ```bash
-# Basic run
-docker run -d -p 8080:8080 penguintech/squawk:latest
-
-# With SSL and token auth
+# DNS Server only
+cd dns-server
+docker build -t squawk-dns-server:latest .
 docker run -d \
-  -p 8443:8443 \
-  -v $(pwd)/certs:/certs \
-  -v $(pwd)/data:/data \
+  -p 8080:8080 \
+  -e PORT=8080 \
   -e USE_NEW_AUTH=true \
-  penguintech/squawk:latest
+  -v $(pwd)/data:/app/data \
+  squawk-dns-server:latest
+
+# DNS Client only
+cd dns-client
+docker build -t squawk-dns-client:latest .
+docker run -d \
+  --cap-add=NET_ADMIN \
+  -p 53:53/udp -p 53:53/tcp \
+  -e SQUAWK_SERVER_URL=https://dns.yourdomain.com:8443 \
+  -e SQUAWK_AUTH_TOKEN=your-token \
+  squawk-dns-client:latest
 ```
 
-### Docker-Compose
+### Docker Compose Configuration
 
 ```yaml
 version: "3.8"
 services:
-  squawk-dns:
-    image: penguintech/squawk:latest
+  dns-server:
+    build:
+      context: ./dns-server
+      dockerfile: Dockerfile
+    image: squawk-dns-server:latest
     ports:
+      - "8080:8080"
       - "8443:8443"
-      - "8000:8000"
-    volumes:
-      - ./data:/data
-      - ./certs:/certs
     environment:
+      - PORT=8080
       - USE_NEW_AUTH=true
-      - SSL_CERT=/certs/server.crt
-      - SSL_KEY=/certs/server.key
+      - CACHE_ENABLED=true
+      - VALKEY_URL=redis://valkey:6379
+    volumes:
+      - ./dns-server/data:/app/data
+      - ./dns-server/certs:/app/certs
     restart: unless-stopped
 
-  squawk-console:
-    image: penguintech/squawk:latest
-    command: py4web run apps
+  web-console:
+    image: squawk-dns-server:latest
+    command: ["sh", "-c", "cd /app/web && python3 -m py4web run apps --host 0.0.0.0 --port 8000"]
     ports:
       - "8000:8000"
-    volumes:
-      - ./data:/data
     depends_on:
-      - squawk-dns
+      - dns-server
+
+  dns-client:
+    build:
+      context: ./dns-client
+      dockerfile: Dockerfile
+    image: squawk-dns-client:latest
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    environment:
+      - SQUAWK_SERVER_URL=http://dns-server:8080
+      - SQUAWK_AUTH_TOKEN=your-token
+    depends_on:
+      - dns-server
+
+  valkey:
+    image: valkey/valkey:latest
+    volumes:
+      - valkey-data:/data
+
+volumes:
+  valkey-data:
 ```
 
 ### Helm Chart

@@ -46,15 +46,20 @@ WORKDIR /app
 # DNS Server Stage
 FROM base AS dns-server
 
-# Copy requirements files first
+# Copy requirements files
 COPY dns-server/requirements*.txt /app/dns-server/
 
 # Install Python dependencies with fallback for enterprise features
 RUN pip install --upgrade pip wheel setuptools && \
-    pip install -r /app/dns-server/requirements.txt || \
-    (echo "Full requirements failed, trying base requirements only..." && \
-     pip install -r /app/dns-server/requirements-base.txt && \
-     echo "Warning: Enterprise SSO features will not be available")
+    if [ -f /app/dns-server/requirements-base.txt ]; then \
+        echo "Installing with fallback strategy..." && \
+        (pip install -r /app/dns-server/requirements.txt 2>/dev/null && echo "Full installation successful") || \
+        (echo "WARNING: Enterprise features failed, using base requirements..." && \
+         pip install -r /app/dns-server/requirements-base.txt); \
+    else \
+        echo "Installing all requirements..." && \
+        pip install -r /app/dns-server/requirements.txt; \
+    fi
 
 # Copy DNS server code
 COPY dns-server/ /app/dns-server/
