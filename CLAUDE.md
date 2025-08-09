@@ -20,6 +20,12 @@ ALL Go-based builds and deployments MUST use Go 1.23. This includes:
 - NEVER specify a higher toolchain version that conflicts with GitHub Actions golangci-lint
 - This prevents "Go language version used to build golangci-lint is lower than targeted Go version" errors
 
+# Go Security Tools Standard
+For Go security scanning, ALWAYS use the official and actively maintained repositories:
+- **gosec**: Use `github.com/securego/gosec/v2/cmd/gosec@latest` (8,401+ stars, actively maintained)
+- NEVER use `github.com/securecodewarrior/gosec` (repository does not exist)
+- Verify repository status before adding new security tools to workflows
+
 # Docker Container Architecture
 Each Python component is built as its own separate Docker container image:
 - DNS Server: Separate container with server-specific dependencies
