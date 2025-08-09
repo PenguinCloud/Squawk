@@ -54,11 +54,32 @@ jobs:
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           make security
 
-  # Build and release job only runs on main branch pushes
+  # Build job runs on both PRs and pushes for verification
+  build:
+    name: Build Go Client
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build application
+        working-directory: dns-client-go
+        run: |
+          make build
+          echo "Build successful - binary created at bin/squawk-dns-client"
+          ls -la bin/
+
+  # Release job only runs on main branch pushes
   build-and-release:
     name: Build and Release Go Client
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
