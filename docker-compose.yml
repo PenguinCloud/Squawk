@@ -162,17 +162,20 @@ services:
     depends_on:
       - prometheus
 
-  # Test Runner (includes dev dependencies)
+  # Test Runner (unified build with test environment)
   test-runner:
     build:
       context: ./dns-server
-      dockerfile: Dockerfile.test
-    image: squawk-dns-test:latest
+      dockerfile: Dockerfile
+      args:
+        - SQUAWK_ENV=test
+    image: squawk-dns-server:latest
     container_name: squawk-test-runner
+    environment:
+      - SQUAWK_ENV=test
     volumes:
       - ./dns-server:/app/dns-server
     working_dir: /app/dns-server
-    command: ["python3", "-m", "pytest", "tests/", "-v"]
     networks:
       - squawk-network
     profiles:

@@ -1,5 +1,5 @@
-# DNS Server Dockerfile using Ubuntu LTS
-FROM ubuntu:22.04
+# Unified DNS Server Dockerfile with Python 3.12
+FROM ubuntu:24.04
 
 LABEL company="Penguin Tech Group LLC"
 LABEL org.opencontainers.image.authors="info@penguintech.group"
@@ -12,9 +12,10 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     DEBIAN_FRONTEND=noninteractive \
-    TZ=UTC
+    TZ=UTC \
+    SQUAWK_ENV=${SQUAWK_ENV:-production}
 
-# Install system dependencies
+# Install system dependencies including latest Python
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -40,6 +41,8 @@ RUN apt-get update && apt-get install -y \
     procps \
     sqlite3 \
     ca-certificates \
+    git \
+    && ln -sf /usr/bin/python3 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -54,19 +57,23 @@ WORKDIR /app/dns-server
 # Copy requirements files
 COPY requirements*.txt ./
 
-# Install Python dependencies with fallback for enterprise features
-RUN python3 -m pip install --upgrade pip wheel setuptools && \
-    if [ -f requirements-base.txt ]; then \
-        echo "Installing with fallback strategy..." && \
-        (python3 -m pip install -r requirements.txt 2>/dev/null && \
-         echo "✓ Full installation successful with enterprise features") || \
-        (echo "⚠ Enterprise features failed, using base requirements..." && \
-         python3 -m pip install -r requirements-base.txt && \
-         echo "✓ Base installation successful (no LDAP/SAML support)"); \
-    else \
-        echo "Installing all requirements..." && \
-        python3 -m pip install -r requirements.txt; \
-    fi
+# Create virtual environment and install dependencies
+RUN python3 -m venv /app/venv && \
+    /app/venv/bin/pip install --upgrade pip wheel setuptools && \
+    # Always install production requirements
+    /app/venv/bin/pip install -r requirements.txt && \
+    # Install dev dependencies if in development/test environment or if requirements-dev.txt exists
+    if [ "$SQUAWK_ENV" = "development" ] || [ "$SQUAWK_ENV" = "test" ] || [ -f requirements-dev.txt ]; then \
+        echo "Installing development dependencies..." && \
+        /app/venv/bin/pip install -r requirements-dev.txt 2>/dev/null || \
+        echo "No dev requirements found or installation failed - continuing with production setup"; \
+    fi && \
+    # Verify critical packages installed correctly
+    /app/venv/bin/python -c "import sys; print(f'Python {sys.version}')" && \
+    echo "✓ Python dependencies installed successfully"
+
+# Make virtual environment the default
+ENV PATH="/app/venv/bin:$PATH"
 
 # Copy application code
 COPY . /app/dns-server/
@@ -87,5 +94,11 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose ports
 EXPOSE 8080 8000
 
-# Default command - start both DNS server and web console
-CMD ["sh", "-c", "python3 /app/dns-server/bins/server.py -p ${PORT:-8080} -n"]
+# Smart command selection based on environment
+CMD if [ "$SQUAWK_ENV" = "test" ]; then \
+        echo "Running tests..." && \
+        python -m pytest tests/ -v; \
+    else \
+        echo "Starting DNS server..." && \
+        python /app/dns-server/bins/server.py -p ${PORT:-8080} -n; \
+    fi

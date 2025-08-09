@@ -72,7 +72,21 @@ test: test-unit test-integration
 
 test-unit:
 	@echo "Running unit tests..."
-	cd dns-server && . venv/bin/activate && pytest tests/ -m "unit or not slow" -v
+	@if [ -d "dns-server/venv" ] && [ -f "dns-server/venv/bin/activate" ]; then \
+		echo "Using virtual environment..."; \
+		cd dns-server && . venv/bin/activate && python -m pytest tests/ -v; \
+	elif command -v python3 >/dev/null 2>&1; then \
+		echo "Using system Python 3..."; \
+		cd dns-server && python3 -m pytest tests/ -v 2>/dev/null || \
+		(echo "Installing pytest..." && python3 -m pip install pytest --break-system-packages 2>/dev/null || python3 -m pip install pytest && python3 -m pytest tests/ -v); \
+	elif command -v python >/dev/null 2>&1; then \
+		echo "Using system Python..."; \
+		cd dns-server && python -m pytest tests/ -v 2>/dev/null || \
+		(echo "Installing pytest..." && python -m pip install pytest && python -m pytest tests/ -v); \
+	else \
+		echo "No Python installation found. Using Docker..."; \
+		docker-compose --profile testing up test-runner; \
+	fi
 
 test-integration:
 	@echo "Running integration tests..."
