@@ -162,6 +162,22 @@ services:
     depends_on:
       - prometheus
 
+  # Test Runner (includes dev dependencies)
+  test-runner:
+    build:
+      context: ./dns-server
+      dockerfile: Dockerfile.test
+    image: squawk-dns-test:latest
+    container_name: squawk-test-runner
+    volumes:
+      - ./dns-server:/app/dns-server
+    working_dir: /app/dns-server
+    command: ["python3", "-m", "pytest", "tests/", "-v"]
+    networks:
+      - squawk-network
+    profiles:
+      - testing  # Only start with --profile testing
+
 networks:
   squawk-network:
     driver: bridge
