@@ -8,22 +8,25 @@ const nextConfig = {
     unoptimized: true
   },
   
-  // Configure trailing slash
+  // Configure trailing slash to match static export behavior
   trailingSlash: true,
   
-  // Configure base path (if needed for subdirectory deployment)
-  // basePath: '',
-  
-  // Configure asset prefix for CDN
-  // assetPrefix: '',
+  // Ensure proper asset handling for Cloudflare Pages
+  assetPrefix: '',
   
   // Environment variables
   env: {
     CUSTOM_VERSION: process.env.npm_package_version || '1.1.1',
   },
   
+  // Disable x-powered-by header
+  poweredByHeader: false,
+  
+  // Optimize for static export
+  generateEtags: false,
+  
   // Note: redirects and headers don't work with static export
-  // These will be handled by wrangler.toml instead
+  // These are handled by _redirects and _headers files instead
 }
 
 module.exports = nextConfig
