@@ -38,13 +38,13 @@ export default function Pricing() {
                     <p className="text-muted">Individual & Internal Use Only</p>
                   </div>
                   <ul className="list-unstyled mb-4">
-                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Full DNS-over-HTTPS functionality</li>
-                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Basic authentication</li>
-                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Docker container deployment</li>
-                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Community support</li>
-                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Basic monitoring</li>
-                    <li className="mb-2 text-muted"><i className="fas fa-times text-muted me-2"></i>No commercial use</li>
-                    <li className="mb-2 text-muted"><i className="fas fa-times text-muted me-2"></i>No enterprise features</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>All enterprise features included</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>mTLS authentication & security</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>DNS privacy protection</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>High performance HTTP/3</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Web console & monitoring</li>
+                    <li className="mb-2 text-muted"><i className="fas fa-times text-muted me-2"></i>No commercial/external use</li>
+                    <li className="mb-2 text-muted"><i className="fas fa-times text-muted me-2"></i>Community support only</li>
                   </ul>
                   <Link href="/download/" className="btn btn-success btn-lg w-100">
                     <i className="fas fa-download me-2"></i>Download Free

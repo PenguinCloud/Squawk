@@ -121,6 +121,21 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
             <div className="col-md-4">
               <div className="card h-100 border-0 shadow-sm">
                 <div className="card-body text-center p-4">
+                  <div className="feature-icon bg-info text-white rounded-circle mx-auto mb-3">
+                    <i className="fas fa-eye-slash fa-2x"></i>
+                  </div>
+                  <h5 className="card-title">DNS Privacy Protection</h5>
+                  <p className="card-text text-muted">
+                    Keep your services private - external endpoints accessible by IP 
+                    without exposing them in public DNS records. Perfect for internal services.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-md-4">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center p-4">
                   <div className="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
                     <i className="fas fa-tachometer-alt fa-2x"></i>
                   </div>
@@ -132,8 +147,10 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
                 </div>
               </div>
             </div>
-            
-            <div className="col-md-4">
+          </div>
+          
+          <div className="row g-4 mt-4">
+            <div className="col-md-6">
               <div className="card h-100 border-0 shadow-sm">
                 <div className="card-body text-center p-4">
                   <div className="feature-icon bg-warning text-white rounded-circle mx-auto mb-3">
@@ -143,6 +160,22 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
                   <p className="card-text text-muted">
                     SSO integration (SAML, LDAP, OAuth2), MFA support, 
                     web console, role-based access, and comprehensive auditing.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-md-6">
+              <div className="card h-100 border-0 shadow-sm bg-light border-2">
+                <div className="card-body text-center p-4">
+                  <div className="feature-icon bg-secondary text-white rounded-circle mx-auto mb-3">
+                    <i className="fas fa-server fa-2x"></i>
+                  </div>
+                  <h5 className="card-title">Private Service Discovery</h5>
+                  <p className="card-text text-muted">
+                    <strong>Revolutionary approach to service privacy:</strong> Your external services 
+                    remain accessible by IP address while staying completely invisible in public DNS. 
+                    No DNS records = no attack surface for reconnaissance.
                   </p>
                 </div>
               </div>
