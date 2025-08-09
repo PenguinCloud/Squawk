@@ -51,7 +51,7 @@ jobs:
       - name: Security scan
         working-directory: dns-client-go
         run: |
-          go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
           make security
 
   # Build and release job only runs on main branch pushes
