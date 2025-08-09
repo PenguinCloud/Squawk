@@ -35,8 +35,10 @@ RUN apt-get update && apt-get install -y \
     libxslt1-dev \
     libldap-dev \
     libldap2-dev \
+    libldap-2.5-0 \
     libsasl2-dev \
     libldap-common \
+    liblber-2.5-0 \
     libxmlsec1-dev \
     libxmlsec1-openssl \
     dnsutils \

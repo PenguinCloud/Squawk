@@ -29,8 +29,10 @@ jobs:
           libxslt1-dev \
           libldap-dev \
           libldap2-dev \
+          libldap-2.5-0 \
           libsasl2-dev \
           libldap-common \
+          liblber-2.5-0 \
           libffi-dev \
           libssl-dev \
           pkg-config
