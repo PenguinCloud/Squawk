@@ -67,18 +67,20 @@ WORKDIR /app/dns-server
 # Copy requirements files
 COPY requirements*.txt ./
 
-# Install Python dependencies
-RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
-    python3.13 -m pip install --break-system-packages -r requirements.txt && \
+# Create virtual environment and install Python dependencies
+RUN python3.13 -m venv /app/venv && \
+    /app/venv/bin/pip install --upgrade pip wheel setuptools && \
+    /app/venv/bin/pip install -r requirements.txt && \
     if [ "$SQUAWK_ENV" = "development" ] || [ "$SQUAWK_ENV" = "test" ] || [ -f requirements-dev.txt ]; then \
         echo "Installing development dependencies..." && \
-        python3.13 -m pip install --break-system-packages -r requirements-dev.txt 2>/dev/null || \
+        /app/venv/bin/pip install -r requirements-dev.txt 2>/dev/null || \
         echo "No dev requirements found or installation failed - continuing with production setup"; \
     fi && \
-    python3.13 -c "import sys; print(f'Python {sys.version}')" && \
-    echo "✓ Python dependencies installed successfully" && \
-    ln -sf /usr/bin/python3.13 /usr/bin/python3 && \
-    ln -sf /usr/bin/python3.13 /usr/bin/python
+    /app/venv/bin/python -c "import sys; print(f'Python {sys.version}')" && \
+    echo "✓ Python dependencies installed successfully"
+
+# Make virtual environment the default
+ENV PATH="/app/venv/bin:$PATH"
 
 
 # Copy application code

@@ -27,6 +27,23 @@ This is REQUIRED because:
 - deadsnakes PPA provides reliable Python 3.13 installation on Ubuntu
 - DO NOT use python:3.13-slim or other Debian-based images due to LDAP header issues
 
+# Docker Build Testing
+ALWAYS test Dockerfile changes by running a build before committing:
+- Run `docker build -f <dockerfile-path> -t <test-tag> <context-path>` after ANY Dockerfile modification
+- Verify the build completes successfully without errors
+- Test critical functionality (python-ldap import, package installations)
+- Only commit after successful build verification
+
+# Docker Virtual Environment Standard
+ALL Docker containers MUST use Python virtual environments to avoid system package conflicts. This prevents issues with packages like blinker that may conflict with system versions.
+
+Requirements:
+- Use `python3.13 -m venv /app/venv` to create virtual environment
+- Install packages using `/app/venv/bin/pip install` instead of system pip
+- Set `ENV PATH="/app/venv/bin:$PATH"` to make venv the default
+- Never use `--break-system-packages` flag - virtual environments eliminate the need
+- Ensures clean dependency isolation and prevents system package conflicts
+
 # Environment Variable Configuration
 ALL user configuration for Squawk DNS is done via environment variables:
 

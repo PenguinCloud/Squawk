@@ -54,9 +54,15 @@ WORKDIR /app/dns-client
 # Copy requirements file
 COPY requirements.txt ./
 
-# Install Python dependencies
-RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
-    python3.13 -m pip install --break-system-packages -r requirements.txt
+# Create virtual environment and install Python dependencies
+RUN python3.13 -m venv /app/venv && \
+    /app/venv/bin/pip install --upgrade pip wheel setuptools && \
+    /app/venv/bin/pip install -r requirements.txt && \
+    /app/venv/bin/python -c "import sys; print(f'Python {sys.version}')" && \
+    echo "✓ Python dependencies installed successfully"
+
+# Make virtual environment the default
+ENV PATH="/app/venv/bin:$PATH"
 
 # Copy application code
 COPY . /app/dns-client/

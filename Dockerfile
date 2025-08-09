@@ -66,17 +66,23 @@ FROM base AS dns-server
 # Copy requirements files
 COPY dns-server/requirements*.txt /app/dns-server/
 
-# Install Python dependencies with fallback for enterprise features
-RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
+# Create virtual environment and install Python dependencies
+RUN python3.13 -m venv /app/venv && \
+    /app/venv/bin/pip install --upgrade pip wheel setuptools && \
     if [ -f /app/dns-server/requirements-base.txt ]; then \
         echo "Installing with fallback strategy..." && \
-        (python3.13 -m pip install --break-system-packages -r /app/dns-server/requirements.txt 2>/dev/null && echo "Full installation successful") || \
+        (/app/venv/bin/pip install -r /app/dns-server/requirements.txt 2>/dev/null && echo "Full installation successful") || \
         (echo "WARNING: Enterprise features failed, using base requirements..." && \
-         python3.13 -m pip install --break-system-packages -r /app/dns-server/requirements-base.txt); \
+         /app/venv/bin/pip install -r /app/dns-server/requirements-base.txt); \
     else \
         echo "Installing all requirements..." && \
-        python3.13 -m pip install --break-system-packages -r /app/dns-server/requirements.txt; \
-    fi
+        /app/venv/bin/pip install -r /app/dns-server/requirements.txt; \
+    fi && \
+    /app/venv/bin/python -c "import sys; print(f'Python {sys.version}')" && \
+    echo "✓ DNS Server Python dependencies installed successfully"
+
+# Make virtual environment the default
+ENV PATH="/app/venv/bin:$PATH"
 
 # Copy DNS server code
 COPY dns-server/ /app/dns-server/
@@ -108,9 +114,15 @@ RUN echo "pytest>=7.4.3" > /app/dns-client/requirements-dev.txt && \
     echo "pytest-cov>=4.1.0" >> /app/dns-client/requirements-dev.txt && \
     echo "pytest-mock>=3.12.0" >> /app/dns-client/requirements-dev.txt
 
-# Install Python dependencies
-RUN python3.13 -m pip install --upgrade pip && \
-    python3.13 -m pip install --break-system-packages -r /app/dns-client/requirements.txt
+# Create virtual environment and install Python dependencies for client
+RUN python3.13 -m venv /app/client-venv && \
+    /app/client-venv/bin/pip install --upgrade pip wheel setuptools && \
+    /app/client-venv/bin/pip install -r /app/dns-client/requirements.txt && \
+    /app/client-venv/bin/python -c "import sys; print(f'Python {sys.version}')" && \
+    echo "✓ DNS Client Python dependencies installed successfully"
+
+# Make client virtual environment the default
+ENV PATH="/app/client-venv/bin:$PATH"
 
 # Copy DNS client code
 COPY dns-client/ /app/dns-client/
@@ -131,11 +143,11 @@ FROM dns-server AS testing
 
 USER root
 
-# Install development dependencies
-RUN python3.13 -m pip install --break-system-packages -r /app/dns-server/requirements-dev.txt
+# Install development dependencies in the existing virtual environment
+RUN /app/venv/bin/pip install -r /app/dns-server/requirements-dev.txt
 
 # Install additional testing tools
-RUN python3.13 -m pip install --break-system-packages \
+RUN /app/venv/bin/pip install \
     safety==2.3.5 \
     bandit==1.7.5 \
     pytest-xdist==3.3.1
@@ -157,8 +169,8 @@ FROM dns-server AS production
 
 USER root
 
-# Install production monitoring tools
-RUN python3.13 -m pip install --break-system-packages \
+# Install production monitoring tools in the existing virtual environment
+RUN /app/venv/bin/pip install \
     prometheus-client==0.18.0 \
     structlog==23.1.0
 
