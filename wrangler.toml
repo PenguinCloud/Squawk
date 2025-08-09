@@ -1,0 +1,65 @@
+name = "squawk-dns-website"
+compatibility_date = "2024-01-15"
+
+# Pages configuration for Next.js in subdirectory
+pages_build_output_dir = "website/out"
+
+# Build configuration - run from website subdirectory
+[build]
+command = "cd website && npm install && npm run build"
+cwd = ""
+
+# Environment variables
+[vars]
+NODE_ENV = "production"
+
+# Production environment
+[env.production]
+name = "squawk-dns-website"
+
+[env.production.vars]
+NODE_ENV = "production"
+
+# Preview environment
+[env.preview]
+name = "squawk-dns-website-preview"
+
+[env.preview.vars]
+NODE_ENV = "development"
+
+# Pages deployment settings
+[pages]
+# Build output directory (Next.js static export from subdirectory)
+build_output_dir = "website/out"
+# Build command (run from subdirectory)
+build_command = "cd website && npm run build"
+
+# Headers for security and performance
+[[pages.headers]]
+for = "/*"
+[pages.headers.values]
+"X-Frame-Options" = "DENY"
+"X-Content-Type-Options" = "nosniff"
+"Referrer-Policy" = "strict-origin-when-cross-origin"
+"Permissions-Policy" = "camera=(), microphone=(), geolocation=()"
+
+[[pages.headers]]
+for = "/favicon.ico"
+[pages.headers.values]
+"Cache-Control" = "public, max-age=31536000, immutable"
+
+[[pages.headers]]
+for = "/_next/static/*"
+[pages.headers.values]
+"Cache-Control" = "public, max-age=31536000, immutable"
+
+# Redirects
+[[pages.redirects]]
+from = "/docs"
+to = "/documentation"
+status = 301
+
+[[pages.redirects]]
+from = "/github"
+to = "https://github.com/penguincloud/squawk"
+status = 302

@@ -107,3 +107,6 @@ Automated GitHub CI/CD release pipeline with comprehensive release notes:
 - **Health Monitoring**: System tray provides real-time server health status
 - **DNS Validation**: All components implement RFC 1035 compliant validation
 - **Multi-Server Support**: Clients support multiple DNS servers with automatic failover
+
+# Git Workflow
+ALWAYS commit all changes when completing work or making significant modifications to ensure proper version control and deployment tracking.
