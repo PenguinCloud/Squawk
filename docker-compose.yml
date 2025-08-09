@@ -65,7 +65,7 @@ services:
     environment:
       POSTGRES_DB: squawk
       POSTGRES_USER: squawk_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-squawk_pass_dev_only}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql:ro
