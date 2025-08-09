@@ -30,6 +30,8 @@ jobs:
           libldap-dev \
           libldap2-dev \
           libsasl2-dev \
+          libldap-common \
+          libber-dev \
           libffi-dev \
           libssl-dev \
           pkg-config
