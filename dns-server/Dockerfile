@@ -26,7 +26,6 @@ RUN apt-get update && apt-get install -y \
     libldap2-dev \
     libsasl2-dev \
     libldap-common \
-    libber-dev \
     libffi-dev \
     libssl-dev \
     libxmlsec1-dev \
