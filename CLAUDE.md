@@ -5,6 +5,25 @@ NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 
+# Python Version Standard
+ALL Python-based builds and deployments MUST use Python 3.13. This includes:
+- Dockerfiles
+- CI/CD workflows
+- Requirements files
+- Local development environments
+
+# Docker Container Architecture
+Each Python component is built as its own separate Docker container image:
+- DNS Server: Separate container with server-specific dependencies
+- DNS Client (Python): Separate container with client-specific dependencies
+- Testing Environment: Separate container with development/testing tools
+- Production Environment: Separate optimized container for production deployments
+
+# Docker Base Image Standard
+ALL Docker containers MUST use Ubuntu 24.04 LTS as the base image.
+Python 3.13 is installed from the deadsnakes PPA repository.
+This ensures consistent behavior across all container environments.
+
 # Environment Variable Configuration
 ALL user configuration for Squawk DNS is done via environment variables:
 

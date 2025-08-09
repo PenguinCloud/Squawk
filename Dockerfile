@@ -1,10 +1,11 @@
-# Multi-stage Dockerfile for Squawk DNS System
-FROM python:3.11-slim AS base
+# Unified Multi-stage Dockerfile for Squawk DNS System
+# Python 3.13 on Ubuntu 24.04 LTS - Standardized Build Environment
+FROM ubuntu:24.04 AS base
 
 LABEL company="Penguin Tech Group LLC"
 LABEL org.opencontainers.image.authors="info@penguintech.group"
 LABEL license="GNU AGPL3"
-LABEL description="Squawk DNS-over-HTTPS Proxy with Token Authentication"
+LABEL description="Squawk DNS-over-HTTPS System - Unified Server and Client Build"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -12,8 +13,15 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
+# Install system dependencies and Python 3.13
 RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y \
+    python3.13 \
+    python3.13-pip \
+    python3.13-dev \
+    python3.13-venv \
     gcc \
     g++ \
     libc-dev \
@@ -24,7 +32,6 @@ RUN apt-get update && apt-get install -y \
     libldap-dev \
     libldap2-dev \
     libsasl2-dev \
-    python3-dev \
     pkg-config \
     build-essential \
     curl \
@@ -32,6 +39,8 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     procps \
     sqlite3 \
+    && ln -sf /usr/bin/python3.13 /usr/bin/python3 \
+    && ln -sf /usr/bin/python3.13 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -50,15 +59,15 @@ FROM base AS dns-server
 COPY dns-server/requirements*.txt /app/dns-server/
 
 # Install Python dependencies with fallback for enterprise features
-RUN pip install --upgrade pip wheel setuptools && \
+RUN python3.13 -m pip install --upgrade pip wheel setuptools && \
     if [ -f /app/dns-server/requirements-base.txt ]; then \
         echo "Installing with fallback strategy..." && \
-        (pip install -r /app/dns-server/requirements.txt 2>/dev/null && echo "Full installation successful") || \
+        (python3.13 -m pip install -r /app/dns-server/requirements.txt 2>/dev/null && echo "Full installation successful") || \
         (echo "WARNING: Enterprise features failed, using base requirements..." && \
-         pip install -r /app/dns-server/requirements-base.txt); \
+         python3.13 -m pip install -r /app/dns-server/requirements-base.txt); \
     else \
         echo "Installing all requirements..." && \
-        pip install -r /app/dns-server/requirements.txt; \
+        python3.13 -m pip install -r /app/dns-server/requirements.txt; \
     fi
 
 # Copy DNS server code
@@ -93,7 +102,7 @@ RUN echo "pytest>=7.4.3" > /app/dns-client/requirements-dev.txt && \
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
-    pip install -r /app/dns-client/requirements.txt
+    python3.13 -m pip install -r /app/dns-client/requirements.txt
 
 # Copy DNS client code
 COPY dns-client/ /app/dns-client/
@@ -115,10 +124,10 @@ FROM dns-server AS testing
 USER root
 
 # Install development dependencies
-RUN pip install -r /app/dns-server/requirements-dev.txt
+RUN python3.13 -m pip install -r /app/dns-server/requirements-dev.txt
 
 # Install additional testing tools
-RUN pip install \
+RUN python3.13 -m pip install \
     safety==2.3.5 \
     bandit==1.7.5 \
     pytest-xdist==3.3.1
@@ -141,7 +150,7 @@ FROM dns-server AS production
 USER root
 
 # Install production monitoring tools
-RUN pip install \
+RUN python3.13 -m pip install \
     prometheus-client==0.18.0 \
     structlog==23.1.0
 
