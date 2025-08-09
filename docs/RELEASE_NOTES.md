@@ -1,3 +1,81 @@
+# Squawk DNS System Release Notes
+
+## v1.1.2 - Maintenance and Security Release
+
+**Release Date**: August 2025  
+**Release Type**: Patch Release with CI/CD and Security Fixes  
+**Breaking Changes**: None (backward compatible)
+
+### 🛠️ Build System & CI/CD Improvements
+
+#### Build Standardization
+- **Python 3.13 Standardization**: All Python components now use Python 3.13 across Docker, CI/CD, and documentation
+- **Go 1.23 Standardization**: All Go components standardized on Go 1.23 with removed toolchain specifications
+- **Virtual Environment Isolation**: Implemented proper virtual environments in all Docker containers to prevent system package conflicts
+- **Simplified Build Matrix**: Removed complex matrix strategies for more reliable single-version builds
+
+#### GitHub Actions Enhancements
+- **Separate Build Verification**: Added dedicated build job that runs on both PRs and main branch pushes
+- **Security Tools Update**: Updated to official `github.com/securego/gosec` repository (8,401+ stars, actively maintained)
+- **Docker Syntax Fixes**: Fixed Docker build command syntax errors in CI/CD workflows
+- **LDAP Dependencies**: Added comprehensive LDAP development packages for python-ldap compilation
+
+### 🔐 Security Improvements
+
+#### Go Security Enhancements
+- **Zero Security Issues**: Resolved all 9 security issues found by gosec scanner
+- **Safe Integer Conversions**: Added `safeUint32()` function to prevent integer overflow vulnerabilities
+- **File Permissions**: Updated file permissions from 0644 to 0600 for sensitive configuration files
+- **Security Tool Standards**: Documented security tools in CLAUDE.md to prevent future tool selection issues
+
+#### Documentation Security
+- **Security Tools Standard**: Added official security scanning tools to development guidelines
+- **Version Standards**: Documented Go 1.23 and Python 3.13 standards to prevent version conflicts
+
+### 🌐 Website & Documentation Fixes
+
+#### Website Navigation
+- **Footer Links Fixed**: Footer navigation links now properly appear as clickable links using inline styles
+- **Documentation Page URLs**: Updated documentation page links to match MkDocs URL structure
+- **Bootstrap Compatibility**: Resolved Bootstrap CSS conflicts with Next.js Link components
+
+#### Documentation Structure
+- **MkDocs Integration**: Properly configured for `docs.squawkdns.com` Cloudflare Pages deployment
+- **API Documentation**: Enhanced API.md with comprehensive endpoint documentation
+- **URL Standardization**: All documentation references now use consistent `squawkdns.com` domain
+
+### 🧹 Code Quality & Maintenance
+
+#### Development Environment
+- **Docker Build Reliability**: Fixed multiple Docker build failures with proper dependency management
+- **Package Dependencies**: Resolved missing system dependencies for LDAP and SSL libraries
+- **Testing Infrastructure**: Enhanced test execution within Docker containers for environment parity
+
+#### Configuration Management  
+- **Environment Variable Documentation**: Updated CLAUDE.md with complete configuration reference
+- **Build Documentation**: Added clear build system standards to prevent future compatibility issues
+
+### 🐛 Bug Fixes
+
+- **Docker Multi-stage Builds**: Fixed target specification errors in GitHub workflows
+- **Python Package Conflicts**: Resolved pip installation conflicts with `--break-system-packages` flag usage
+- **LDAP Compilation**: Fixed python-ldap build failures by adding required development headers
+- **Version Compatibility**: Resolved Go toolchain version mismatches causing build failures
+
+### 📚 Documentation Updates
+
+- **CLAUDE.md Enhancements**: Added Go version standards and security tools documentation
+- **API Documentation**: Comprehensive API endpoint documentation with examples
+- **Build Standards**: Documented Python 3.13 and Go 1.23 standardization decisions
+
+### 🔄 Migration Notes
+
+- **Automatic**: No manual intervention required for existing deployments
+- **CI/CD**: GitHub workflows will automatically use new standards
+- **Docker**: Existing containers will rebuild with improved dependency management
+
+---
+
 # Squawk DNS System v1.1.1 Release Notes
 
 **Release Date**: August 2025  
