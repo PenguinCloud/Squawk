@@ -38,6 +38,7 @@ This is a Penguin Technologies Group LLC project, released under the AGPL-3.0 li
 
 Before your first contribution, you must sign our CLA:
 
+> **Example:** Replace `your-email@example.com` and `Your Name` with your actual email address and name.
 ```bash
 # Sign the CLA electronically
 curl -X POST https://cla.penguintech.group/sign \
