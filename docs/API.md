@@ -19,6 +19,7 @@ The Squawk API provides comprehensive access to DNS-over-HTTPS services with fin
 
 ### Base URLs
 
+> **Note:** The URLs using `example.com` below are placeholders for documentation purposes. Replace them with your actual deployment URLs in production and staging environments.
 ```
 Production:  https://dns.example.com
 Staging:     https://staging-dns.example.com
