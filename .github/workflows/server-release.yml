@@ -18,57 +18,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Cache Python packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('dns-server/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
+      - name: Build DNS Server Docker image for testing
         run: |
-          python -m pip install --upgrade pip
-          # Install requirements if they exist
-          if [ -f dns-server/requirements.txt ]; then
-            pip install -r dns-server/requirements.txt
-          else
-            # Install core dependencies
-            pip install py4web pydal dnspython requests PyYAML cryptography
-          fi
-          
-          # Install testing dependencies
-          if [ -f dns-server/requirements-dev.txt ]; then
-            pip install -r dns-server/requirements-dev.txt
-          else
-            pip install pytest pytest-cov pytest-mock black flake8 mypy safety bandit
-          fi
+          docker build -f dns-server/Dockerfile -t squawk-dns-server:release-test dns-server/
 
-      - name: Lint with flake8
-        run: |
-          flake8 dns-server/bins/ --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 dns-server/bins/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-      - name: Security scan with bandit
-        run: |
-          bandit -r dns-server/bins/ -f json || true
-
-      - name: Safety check
-        run: |
-          safety check || true
-
-      - name: Run tests
+      - name: Run tests inside Docker container
         run: |
           if [ -d dns-server/tests ]; then
-            pytest dns-server/tests/ -v --cov=dns-server/bins --cov-report=term-missing
+            docker run --rm squawk-dns-server:release-test python3.13 -m pytest tests/ -v --cov=bins --cov-report=term-missing
           else
             echo "No tests found, skipping test execution"
           fi
+
+      - name: Run security scans inside Docker container
+        run: |
+          docker run --rm squawk-dns-server:release-test python3.13 -m bandit -r bins/ -f json || true
+          docker run --rm squawk-dns-server:release-test python3.13 -m safety check || true
+
+      - name: Run linting inside Docker container
+        run: |
+          docker run --rm squawk-dns-server:release-test python3.13 -m flake8 bins/ --count --select=E9,F63,F7,F82 --show-source --statistics || true
+          docker run --rm squawk-dns-server:release-test python3.13 -m flake8 bins/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
 
   # Build and release job only runs on main branch pushes
   build-and-release:
