@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  dns-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: squawk-dns-server:latest
+    container_name: squawk-dns-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"  # DNS-over-HTTPS API
+      - "8443:8443"  # DNS-over-HTTPS API (TLS)
+    environment:
+      - PORT=8080
+      - USE_NEW_AUTH=true
+      - LOG_LEVEL=INFO
+      - ENABLE_BLACKLIST=false
+      - CACHE_ENABLED=true
+      - CACHE_TTL=300
+      # Redis/Valkey cache (optional)
+      - VALKEY_URL=redis://valkey:6379
+      # mTLS configuration (optional)
+      - ENABLE_MTLS=false
+      - CERT_DIR=/app/certs
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./certs:/app/certs
+      - ./web:/app/web
+    networks:
+      - squawk-network
+    depends_on:
+      - valkey
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web-console:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: squawk-dns-server:latest
+    container_name: squawk-web-console
+    restart: unless-stopped
+    command: ["sh", "-c", "cd /app/web && python3 -m py4web run apps --host 0.0.0.0 --port 8000"]
+    ports:
+      - "8000:8000"  # Web console
+    environment:
+      - PY4WEB_HOST=0.0.0.0
+      - PY4WEB_PORT=8000
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/app/data
+      - ./web:/app/web
+    networks:
+      - squawk-network
+    depends_on:
+      - dns-server
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: squawk-valkey
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey-data:/data
+    networks:
+      - squawk-network
+    command: ["valkey-server", "--appendonly", "yes"]
+
+networks:
+  squawk-network:
+    driver: bridge
+
+volumes:
+  valkey-data:

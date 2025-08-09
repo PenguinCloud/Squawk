@@ -1,0 +1,49 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build DNS Server Docker image for testing
+      run: |
+        docker build -f dns-server/Dockerfile --build-arg SQUAWK_ENV=test -t squawk-dns-server:test dns-server/
+    
+    - name: Run unit tests on complete application image
+      run: |
+        docker run --rm -w /app/dns-server squawk-dns-server:test python3.13 -m pytest tests/ -v --tb=short
+    
+  docker-multi-build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build unified Docker image - DNS Server
+      run: |
+        docker build --target dns-server -t squawk-dns-server-unified:test .
+    
+    - name: Build unified Docker image - DNS Client
+      run: |
+        docker build --target dns-client -t squawk-dns-client-unified:test .
+    
+    - name: Test unified Docker image - DNS Server
+      run: |
+        docker run --rm squawk-dns-server-unified:test python3.13 --version
+        docker run --rm squawk-dns-server-unified:test python -c "import sys; print(f'Virtual env: {sys.prefix}')"
+        docker run --rm squawk-dns-server-unified:test python -c "import ldap; print('python-ldap OK')"
+    
+    - name: Test unified Docker image - DNS Client  
+      run: |
+        docker run --rm squawk-dns-client-unified:test python3.13 --version
+        docker run --rm squawk-dns-client-unified:test python -c "import sys; print(f'Virtual env: {sys.prefix}')"
+        docker run --rm squawk-dns-client-unified:test python -c "import dns.resolver; print('DNS Client OK')"

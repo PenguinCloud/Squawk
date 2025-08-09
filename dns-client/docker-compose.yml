@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  dns-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: squawk-dns-client:latest
+    container_name: squawk-dns-client
+    restart: unless-stopped
+    network_mode: host  # Required for DNS service
+    cap_add:
+      - NET_ADMIN  # Required for DNS port binding
+    environment:
+      # DNS Server Configuration
+      - SQUAWK_SERVER_URL=https://dns.yourdomain.com:8443
+      - SQUAWK_AUTH_TOKEN=your-secure-token-here
+      
+      # Client Configuration
+      - LOG_LEVEL=INFO
+      - SQUAWK_DOMAIN=
+      - SQUAWK_RECORD_TYPE=A
+      
+      # mTLS Configuration (optional)
+      - SQUAWK_CLIENT_CERT=/app/certs/client.crt
+      - SQUAWK_CLIENT_KEY=/app/certs/client.key
+      - SQUAWK_CA_CERT=/app/certs/ca.crt
+      - SQUAWK_VERIFY_SSL=true
+      
+      # Console URL (optional)
+      - SQUAWK_CONSOLE_URL=http://localhost:8000/dns_console
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./certs:/app/certs
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; socket.gethostbyname('localhost')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: System tray client for desktop
+  systray-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: squawk-dns-client:latest
+    container_name: squawk-systray
+    restart: unless-stopped
+    command: ["python3", "/app/dns-client/bins/systray.py"]
+    environment:
+      - DISPLAY=${DISPLAY}
+      - SQUAWK_SERVER_URL=https://dns.yourdomain.com:8443
+      - SQUAWK_AUTH_TOKEN=your-secure-token-here
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    network_mode: host
+    profiles:
+      - desktop  # Only start with --profile desktop

@@ -1,0 +1,10 @@
+build-essential
+gcc
+g++
+libxml2-dev
+libxslt1-dev
+libldap-dev
+libldap2-dev
+libsasl2-dev
+python3-dev
+pkg-config
