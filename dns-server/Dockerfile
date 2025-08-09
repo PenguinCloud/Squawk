@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y \
     libsasl2-dev \
     libffi-dev \
     libssl-dev \
+    libxmlsec1-dev \
+    libxmlsec1-openssl \
     pkg-config \
     curl \
     wget \
