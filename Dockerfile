@@ -58,7 +58,6 @@ RUN pip install --upgrade pip wheel setuptools && \
 
 # Copy DNS server code
 COPY dns-server/ /app/dns-server/
-COPY claude.md /app/
 COPY docs/ /app/docs/
 
 # Set permissions
@@ -93,7 +92,6 @@ RUN pip install --upgrade pip && \
 
 # Copy DNS client code
 COPY dns-client/ /app/dns-client/
-COPY claude.md /app/
 COPY docs/ /app/docs/
 
 # Set permissions
