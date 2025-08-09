@@ -111,7 +111,11 @@ func runClient(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("Failed to create DoH client: %v", err)
 	}
-	defer dohClient.Close()
+	defer func() {
+		if err := dohClient.Close(); err != nil {
+			log.Printf("Warning: failed to close DoH client: %v", err)
+		}
+	}()
 
 	// If forwarding is enabled, start forwarder and wait
 	if cfg.Forwarder.ListenUDP || cfg.Forwarder.ListenTCP {
@@ -254,7 +258,11 @@ to the configured DoH server.`,
 		if err != nil {
 			log.Fatalf("Failed to create DoH client: %v", err)
 		}
-		defer dohClient.Close()
+		defer func() {
+		if err := dohClient.Close(); err != nil {
+			log.Printf("Warning: failed to close DoH client: %v", err)
+		}
+	}()
 
 		// Run forwarder
 		runForwarder(dohClient, cfg)

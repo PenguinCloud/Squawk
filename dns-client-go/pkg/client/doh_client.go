@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -395,7 +396,11 @@ func (c *DoHClient) Query(ctx context.Context, domain, recordType string) (*DNSR
 			}
 			continue
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				log.Printf("Warning: failed to close response body: %v", err)
+			}
+		}()
 
 		// Read response body
 		body, err := io.ReadAll(resp.Body)
@@ -526,7 +531,11 @@ func (c *DoHClient) QueryWithJSON(ctx context.Context, domain, recordType string
 	if err != nil {
 		return nil, fmt.Errorf("HTTP request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Printf("Warning: failed to close response body: %v", err)
+		}
+	}()
 
 	// Read response body
 	body, err := io.ReadAll(resp.Body)
