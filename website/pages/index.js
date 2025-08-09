@@ -41,14 +41,14 @@ export default function Home() {
                     </div>
                     <div className="col-md-6">
                       <div className="d-flex align-items-center">
-                        <i className="fas fa-cogs text-info me-2"></i>
-                        <span>Enterprise Features</span>
+                        <i className="fas fa-eye-slash text-info me-2"></i>
+                        <span>DNS Privacy Protection</span>
                       </div>
                     </div>
                     <div className="col-md-6">
                       <div className="d-flex align-items-center">
                         <i className="fas fa-lock text-danger me-2"></i>
-                        <span>DNS Security</span>
+                        <span>Enterprise Security</span>
                       </div>
                     </div>
                   </div>
