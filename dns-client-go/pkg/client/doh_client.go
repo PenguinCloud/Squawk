@@ -501,7 +501,12 @@ func (c *DoHClient) QueryWithJSON(ctx context.Context, domain, recordType string
 	}
 
 	// Create POST request
-	req, err := http.NewRequestWithContext(ctx, "POST", c.serverURL, bytes.NewBuffer(jsonData))
+	// Use the current server URL (same as Query method)
+	if len(c.serverURLs) == 0 {
+		return nil, fmt.Errorf("no server URLs configured")
+	}
+	serverURL := c.serverURLs[c.currentIndex]
+	req, err := http.NewRequestWithContext(ctx, "POST", serverURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
