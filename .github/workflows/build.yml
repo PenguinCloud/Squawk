@@ -40,6 +40,8 @@ jobs:
         pip install -r dns-server/requirements.txt || \
         (echo "::warning::Enterprise features installation failed, using base requirements" && \
          pip install -r dns-server/requirements-base.txt)
+        # Install development/testing dependencies
+        pip install -r dns-server/requirements-dev.txt
     
     - name: Run tests
       run: |
