@@ -75,7 +75,7 @@ services:
       - NET_ADMIN  # Required for DNS port binding
     environment:
       - SQUAWK_SERVER_URL=http://dns-server:8080
-      - SQUAWK_AUTH_TOKEN=${AUTH_TOKEN:-your-secure-token}
+      - SQUAWK_AUTH_TOKEN=${AUTH_TOKEN}
       - LOG_LEVEL=INFO
       - SQUAWK_VERIFY_SSL=false
     volumes:
