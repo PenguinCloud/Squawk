@@ -76,6 +76,7 @@ func loadFromFile(filename string, config *AppConfig) error {
 		return fmt.Errorf("invalid filename: directory traversal not allowed")
 	}
 	
+	// #nosec G304 - This reads user-specified config files, validated against directory traversal
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
