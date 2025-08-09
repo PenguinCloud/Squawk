@@ -20,7 +20,7 @@ Squawk v1.1.1 represents a massive leap forward in DNS-over-HTTPS proxy technolo
 1. **URL Path Normalization**: Auto-corrects paths for public DNS providers (/resolve vs /dns-query)
 2. **Certificate Validation**: Fixed edge cases in mTLS certificate validation
 3. **Error Handling**: Improved error messages and aggregation for multiple server failures
-4. **Configuration Loading**: Fixed environment variable parsing for comma-separated server lists
+4. **Configuration Loading**: Fixed environment variable parsing for comma-delimited server lists
 
 ### System Tray Enhancements (NEW)
 1. **Health Monitoring**: Real-time DNS server health monitoring with visual indicators
