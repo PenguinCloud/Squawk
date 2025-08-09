@@ -13,7 +13,12 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # Import console functions
-import dns_console
+try:
+    import dns_console
+except ImportError as e:
+    raise ImportError(
+        "Failed to import 'dns_console'. Please check that the path manipulation above is correct and that the module exists."
+    ) from e
 
 class TestTokenManagement:
     """Test token management functionality"""
