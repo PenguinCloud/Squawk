@@ -15,15 +15,18 @@ ENV PYTHONUNBUFFERED=1 \
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    g++ \
     libc-dev \
     libffi-dev \
     libssl-dev \
     libxml2-dev \
     libxslt1-dev \
+    libldap-dev \
     libldap2-dev \
     libsasl2-dev \
     python3-dev \
     pkg-config \
+    build-essential \
     curl \
     dnsutils \
     net-tools \
@@ -43,24 +46,15 @@ WORKDIR /app
 # DNS Server Stage
 FROM base AS dns-server
 
-# Create requirements files if they don't exist
-RUN echo "py4web>=1.20241215.1" > /app/dns-server/requirements.txt && \
-    echo "pydal>=20241215.1" >> /app/dns-server/requirements.txt && \
-    echo "dnspython>=2.4.2" >> /app/dns-server/requirements.txt && \
-    echo "requests>=2.31.0" >> /app/dns-server/requirements.txt && \
-    echo "PyYAML>=6.0.1" >> /app/dns-server/requirements.txt && \
-    echo "cryptography>=41.0.7" >> /app/dns-server/requirements.txt
+# Copy requirements files first
+COPY dns-server/requirements*.txt /app/dns-server/
 
-RUN echo "pytest>=7.4.3" > /app/dns-server/requirements-dev.txt && \
-    echo "pytest-cov>=4.1.0" >> /app/dns-server/requirements-dev.txt && \
-    echo "pytest-mock>=3.12.0" >> /app/dns-server/requirements-dev.txt && \
-    echo "black>=23.9.1" >> /app/dns-server/requirements-dev.txt && \
-    echo "flake8>=6.1.0" >> /app/dns-server/requirements-dev.txt && \
-    echo "mypy>=1.6.1" >> /app/dns-server/requirements-dev.txt
-
-# Install Python dependencies
-RUN pip install --upgrade pip && \
-    pip install -r /app/dns-server/requirements.txt
+# Install Python dependencies with fallback for enterprise features
+RUN pip install --upgrade pip wheel setuptools && \
+    pip install -r /app/dns-server/requirements.txt || \
+    (echo "Full requirements failed, trying base requirements only..." && \
+     pip install -r /app/dns-server/requirements-base.txt && \
+     echo "Warning: Enterprise SSO features will not be available")
 
 # Copy DNS server code
 COPY dns-server/ /app/dns-server/
