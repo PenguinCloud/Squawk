@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     libxml2-dev \
     libxslt1-dev \
+    libldap-dev \
     libldap2-dev \
     libsasl2-dev \
     libffi-dev \

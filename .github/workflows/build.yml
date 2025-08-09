@@ -30,7 +30,8 @@ jobs:
           libldap-dev \
           libldap2-dev \
           libsasl2-dev \
-          python3-dev \
+          libffi-dev \
+          libssl-dev \
           pkg-config
     
     - name: Install Python dependencies
