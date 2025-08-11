@@ -15,6 +15,7 @@ import base64
 import io
 import pyotp
 import qrcode
+import httpx
 from datetime import datetime, timedelta
 from functools import wraps
 
@@ -42,6 +43,10 @@ ENABLE_SSO = os.getenv('ENABLE_SSO', 'false').lower() == 'true'
 SSO_PROVIDER = os.getenv('SSO_PROVIDER', 'saml')  # saml, ldap, oauth2
 REQUIRE_MFA = os.getenv('REQUIRE_MFA', 'false').lower() == 'true'
 MFA_ISSUER = os.getenv('MFA_ISSUER', 'Squawk DNS')
+
+# License server configuration
+LICENSE_SERVER_URL = os.getenv('LICENSE_SERVER_URL', 'https://license.squawkdns.com')
+LICENSE_KEY = os.getenv('LICENSE_KEY', '')
 
 # Brute force protection settings
 BRUTE_FORCE_PROTECTION = os.getenv('BRUTE_FORCE_PROTECTION', 'true').lower() == 'true'
@@ -576,6 +581,54 @@ def log_query(token_value, domain, query_type, status, client_ip=None):
     
     db.commit()
 
+def check_license_status():
+    """Check license status with the license server"""
+    if not LICENSE_KEY:
+        return None
+    
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            # Validate license key
+            response = client.post(
+                f"{LICENSE_SERVER_URL}/api/validate",
+                json={"license_key": LICENSE_KEY}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("valid"):
+                    return {
+                        "valid": True,
+                        "license_key": LICENSE_KEY,
+                        "expires_at": data.get("expires_at"),
+                        "tokens_used": data.get("tokens_used", 0),
+                        "max_tokens": data.get("max_tokens", 100)
+                    }
+    except Exception as e:
+        print(f"License check error: {e}")
+    
+    return None
+
+def validate_user_token(token):
+    """Validate a user token with the license server"""
+    if not token:
+        return False
+    
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            response = client.post(
+                f"{LICENSE_SERVER_URL}/api/validate_token",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("valid", False)
+    except Exception as e:
+        print(f"Token validation error: {e}")
+    
+    return False
+
 # Web interface actions
 @action('index')
 @action.uses('index.html', db)
@@ -588,11 +641,22 @@ def index():
         limitby=(0, 10)
     )
     
+    # Check for license information
+    license_info = None
+    if os.getenv('USE_LICENSE_SERVER', 'false').lower() == 'true':
+        license_info = check_license_status()
+    
     return dict(
         token_count=token_count,
         domain_count=domain_count,
-        recent_queries=recent_queries
+        recent_queries=recent_queries,
+        license_info=license_info
     )
+
+@action('license/portal')
+def license_portal():
+    """Redirect to license server portal"""
+    redirect(f"{LICENSE_SERVER_URL}/portal/login")
 
 @action('tokens')
 @action.uses('tokens.html', db)

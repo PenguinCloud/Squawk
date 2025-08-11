@@ -21,13 +21,100 @@ export default function Features() {
         </div>
       </section>
 
+      {/* Premium Feature Highlight */}
+      <section className="py-5 bg-light">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-12 text-center mb-5">
+              <div className="mb-3">
+                <span className="badge bg-primary fs-6 px-3 py-2">
+                  <i className="fas fa-crown me-2"></i>Premium Edition Exclusive
+                </span>
+              </div>
+              <h2 className="fw-bold">Selective DNS Routing</h2>
+              <p className="lead text-muted">One secure DNS endpoint, multiple access levels</p>
+            </div>
+          </div>
+          
+          <div className="row align-items-center">
+            <div className="col-lg-6">
+              <div className="pe-lg-4">
+                <h4 className="fw-bold mb-3">Revolutionary DNS Security Architecture</h4>
+                <p className="mb-4">
+                  The game-changing feature that sets Squawk DNS Premium apart: serve different DNS responses 
+                  to different users from a single secure endpoint, based on authentication and permissions.
+                </p>
+                
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <div className="p-3 bg-success bg-opacity-10 rounded">
+                      <h6 className="text-success"><i className="fas fa-users me-2"></i>Internal Users</h6>
+                      <p className="mb-0 small">Access private corporate DNS entries + public internet DNS</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-3 bg-warning bg-opacity-10 rounded">
+                      <h6 className="text-warning"><i className="fas fa-globe me-2"></i>External Users</h6>
+                      <p className="mb-0 small">Receive only public DNS - private entries stay hidden</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <Link href="/pricing" className="btn btn-primary btn-lg me-3">
+                    <i className="fas fa-crown me-2"></i>Get Premium
+                  </Link>
+                  <a href="mailto:sales@penguincloud.io" className="btn btn-outline-primary btn-lg">
+                    <i className="fas fa-envelope me-2"></i>Contact Sales
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-lg-6">
+              <div className="text-center">
+                <div className="card bg-dark text-light shadow-lg">
+                  <div className="card-header bg-primary">
+                    <h6 className="mb-0"><i className="fas fa-server me-2"></i>Single DNS Server - Multiple Security Contexts</h6>
+                  </div>
+                  <div className="card-body">
+                    <div className="row">
+                      <div className="col-6">
+                        <div className="p-2 bg-success bg-opacity-25 rounded mb-2">
+                          <small><strong>Internal User Query</strong></small><br>
+                          <code className="text-success">internal.corp.com → 10.0.50.5</code>
+                        </div>
+                        <div className="p-2 bg-info bg-opacity-25 rounded">
+                          <small><strong>Public Query</strong></small><br>
+                          <code className="text-info">google.com → 142.250.191.14</code>
+                        </div>
+                      </div>
+                      <div className="col-6">
+                        <div className="p-2 bg-danger bg-opacity-25 rounded mb-2">
+                          <small><strong>External User Query</strong></small><br>
+                          <code className="text-danger">internal.corp.com → NXDOMAIN</code>
+                        </div>
+                        <div className="p-2 bg-info bg-opacity-25 rounded">
+                          <small><strong>Public Query</strong></small><br>
+                          <code className="text-info">google.com → 142.250.191.14</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Feature Categories Preview */}
       <section className="py-5">
         <div className="container">
           <div className="row">
             <div className="col-lg-12 text-center mb-5">
-              <h2 className="fw-bold">Feature Categories</h2>
-              <p className="text-muted">Overview of Squawk DNS capabilities</p>
+              <h2 className="fw-bold">Complete Feature Overview</h2>
+              <p className="text-muted">Community and Premium features side by side</p>
             </div>
           </div>
 

@@ -92,13 +92,77 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
         </div>
       </section>
 
-      {/* Features Overview */}
+      {/* Edition Comparison */}
       <section className="py-5 bg-light">
         <div className="container">
           <div className="row">
             <div className="col-lg-12 text-center mb-5">
-              <h2 className="fw-bold">Why Choose Squawk DNS?</h2>
-              <p className="text-muted">Enterprise-grade DNS security with unmatched performance and features</p>
+              <h2 className="fw-bold">Choose Your Edition</h2>
+              <p className="text-muted">Community Open Source or Premium Licensed - both with enterprise-grade security</p>
+            </div>
+          </div>
+          
+          <div className="row g-4 mb-5">
+            <div className="col-lg-6">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-header bg-success text-white text-center">
+                  <h4 className="mb-0"><i className="fab fa-oss me-2"></i>Community Edition</h4>
+                  <p className="mb-0 mt-2"><small>Free & Open Source</small></p>
+                </div>
+                <div className="card-body p-4">
+                  <ul className="list-unstyled">
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Basic DNS-over-HTTPS resolution</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>mTLS authentication support</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Standard caching with Redis/Valkey</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Single-token authentication</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Basic DNS blacklisting</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Web console interface</li>
+                    <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Docker deployment</li>
+                  </ul>
+                  <div className="text-center mt-4">
+                    <Link href="/download" className="btn btn-success btn-lg">
+                      <i className="fab fa-github me-2"></i>Download Free
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-lg-6">
+              <div className="card h-100 border-primary border-3 shadow-lg position-relative">
+                <div className="position-absolute top-0 start-50 translate-middle">
+                  <span className="badge bg-warning text-dark fs-6 px-3 py-2">Most Popular</span>
+                </div>
+                <div className="card-header bg-primary text-white text-center">
+                  <h4 className="mb-0"><i className="fas fa-crown me-2"></i>Premium Edition</h4>
+                  <p className="mb-0 mt-2"><small>Licensed with Professional Support</small></p>
+                </div>
+                <div className="card-body p-4">
+                  <div className="mb-3 p-3 bg-primary bg-opacity-10 rounded">
+                    <h6 className="text-primary mb-2"><i className="fas fa-star me-2"></i>Key Premium Benefit:</h6>
+                    <p className="mb-0 fw-bold">
+                      <strong>Selective DNS Routing</strong> - One secure endpoint that provides private AND public DNS 
+                      entries based on user/group permissions. Internal users get corporate DNS + public internet, 
+                      external users get public only.
+                    </p>
+                  </div>
+                  <ul className="list-unstyled">
+                    <li className="mb-2"><i className="fas fa-check text-primary me-2"></i><strong>All Community features</strong></li>
+                    <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Per-user token management</li>
+                    <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Advanced analytics & reporting</li>
+                    <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Priority DNS resolution</li>
+                    <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Enhanced caching optimization</li>
+                    <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Multi-tenant architecture</li>
+                    <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Professional technical support</li>
+                    <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Enterprise SLA</li>
+                  </ul>
+                  <div className="text-center mt-4">
+                    <Link href="/pricing" className="btn btn-primary btn-lg">
+                      <i className="fas fa-rocket me-2"></i>Start Premium
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -177,6 +241,114 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
                     remain accessible by IP address while staying completely invisible in public DNS. 
                     No DNS records = no attack surface for reconnaissance.
                   </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Selective DNS Routing Feature */}
+      <section className="py-5 bg-gradient-to-r">
+        <div className="container">
+          <div className="row align-items-center">
+            <div className="col-lg-6">
+              <div className="pe-lg-5">
+                <div className="mb-3">
+                  <span className="badge bg-primary fs-6 px-3 py-2">
+                    <i className="fas fa-crown me-2"></i>Premium Feature
+                  </span>
+                </div>
+                <h2 className="fw-bold mb-4">
+                  One Secure DNS Endpoint, 
+                  <span className="text-primary"> Multiple Access Levels</span>
+                </h2>
+                <p className="lead mb-4">
+                  The revolutionary selective DNS routing feature allows you to serve different DNS responses 
+                  to different users from a single secure endpoint, based on authentication and permissions.
+                </p>
+                
+                <div className="feature-benefits">
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <div className="d-flex align-items-start">
+                        <div className="flex-shrink-0">
+                          <i className="fas fa-users text-success fs-5 me-3"></i>
+                        </div>
+                        <div>
+                          <h6 className="mb-1">Internal Users</h6>
+                          <p className="text-muted mb-0">Get access to private corporate DNS entries + public internet DNS</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <div className="d-flex align-items-start">
+                        <div className="flex-shrink-0">
+                          <i className="fas fa-globe text-info fs-5 me-3"></i>
+                        </div>
+                        <div>
+                          <h6 className="mb-1">External Users</h6>
+                          <p className="text-muted mb-0">Receive only public DNS resolution - private entries remain hidden</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <div className="d-flex align-items-start">
+                        <div className="flex-shrink-0">
+                          <i className="fas fa-shield-alt text-primary fs-5 me-3"></i>
+                        </div>
+                        <div>
+                          <h6 className="mb-1">Secure Authentication</h6>
+                          <p className="text-muted mb-0">Token-based authentication ensures only authorized users access private DNS</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <Link href="/features" className="btn btn-primary btn-lg me-3">
+                    <i className="fas fa-info-circle me-2"></i>
+                    Learn More
+                  </Link>
+                  <Link href="/pricing" className="btn btn-outline-primary btn-lg">
+                    <i className="fas fa-rocket me-2"></i>
+                    Get Premium
+                  </Link>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-lg-6">
+              <div className="text-center">
+                <div className="position-relative">
+                  <div className="card bg-dark text-light shadow-lg mb-3">
+                    <div className="card-header bg-success">
+                      <small><i className="fas fa-user me-2"></i>Internal User Query</small>
+                    </div>
+                    <div className="card-body">
+                      <pre className="mb-0 text-success"><code>{`nslookup internal.company.com
+Server: dns.company.com
+Address: 10.0.1.100
+
+internal.company.com resolves to:
+10.0.50.5 (Private server accessible)`}</code></pre>
+                    </div>
+                  </div>
+                  
+                  <div className="card bg-dark text-light shadow-lg">
+                    <div className="card-header bg-warning text-dark">
+                      <small><i className="fas fa-globe me-2"></i>External User Query</small>
+                    </div>
+                    <div className="card-body">
+                      <pre className="mb-0 text-warning"><code>{`nslookup internal.company.com
+Server: dns.company.com
+Address: NXDOMAIN
+
+internal.company.com:
+Domain not found (Private entries hidden)`}</code></pre>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

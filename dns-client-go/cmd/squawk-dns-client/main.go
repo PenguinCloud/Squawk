@@ -14,6 +14,7 @@ import (
 	"github.com/penguincloud/squawk/dns-client-go/pkg/client"
 	"github.com/penguincloud/squawk/dns-client-go/pkg/config"
 	"github.com/penguincloud/squawk/dns-client-go/pkg/forwarder"
+	"github.com/penguincloud/squawk/dns-client-go/pkg/license"
 	"github.com/spf13/cobra"
 )
 
@@ -83,6 +84,7 @@ func init() {
 	rootCmd.AddCommand(forwardCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(licenseCmd)
 }
 
 // runClient is the main client function
@@ -98,6 +100,43 @@ func runClient(cmd *cobra.Command, args []string) {
 
 	if verbose {
 		fmt.Println(cfg.String())
+	}
+
+	// Check if license is configured - skip validation if not (backward compatibility)
+	if cfg.License.LicenseKey != "" || cfg.License.UserToken != "" {
+		// Validate license before proceeding
+		validator := license.NewValidator(cfg.License)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		isValid, err := validator.IsValid(ctx)
+		if err != nil {
+			if verbose {
+				fmt.Printf("License validation warning: %v\n", err)
+			}
+			// Allow offline operation for now, but warn user
+			fmt.Println("Warning: Could not validate license. Some features may be restricted.")
+		} else if !isValid {
+			fmt.Println("ERROR: Invalid or expired license. Please check your license key or user token.")
+			fmt.Println("Contact your administrator for license assistance.")
+			os.Exit(1)
+		} else if verbose {
+			fmt.Println("✓ License validated successfully")
+			if info, err := validator.GetLicenseInfo(ctx); err == nil {
+				fmt.Println(info)
+			}
+		}
+	} else if verbose {
+		fmt.Println("Note: No license configured. Running in compatibility mode.")
+		fmt.Println("For premium features, configure SQUAWK_LICENSE_KEY or SQUAWK_USER_TOKEN.")
+	}
+
+	// Use license user token for DNS requests if available and no explicit auth token set
+	if cfg.License.UserToken != "" && cfg.Client.AuthToken == "" {
+		cfg.Client.AuthToken = cfg.License.UserToken
+		if verbose {
+			fmt.Println("Using license user token for DNS authentication")
+		}
 	}
 
 	// Validate domain is provided
@@ -253,6 +292,37 @@ to the configured DoH server.`,
 			fmt.Println(cfg.String())
 		}
 
+		// Check if license is configured for forwarder
+		if cfg.License.LicenseKey != "" || cfg.License.UserToken != "" {
+			// Validate license before starting forwarder
+			validator := license.NewValidator(cfg.License)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			isValid, err := validator.IsValid(ctx)
+			if err != nil {
+				fmt.Printf("Warning: Could not validate license: %v\n", err)
+				fmt.Println("DNS forwarding will continue, but some features may be restricted.")
+			} else if !isValid {
+				fmt.Println("ERROR: Invalid or expired license required for DNS forwarding service.")
+				fmt.Println("Contact your administrator for license assistance.")
+				os.Exit(1)
+			} else if verbose {
+				fmt.Println("✓ License validated successfully")
+			}
+		} else if verbose {
+			fmt.Println("Note: No license configured. DNS forwarding running in compatibility mode.")
+			fmt.Println("For premium features, configure SQUAWK_LICENSE_KEY or SQUAWK_USER_TOKEN.")
+		}
+
+		// Use license user token for DNS requests if available and no explicit auth token set
+		if cfg.License.UserToken != "" && cfg.Client.AuthToken == "" {
+			cfg.Client.AuthToken = cfg.License.UserToken
+			if verbose {
+				fmt.Println("Using license user token for DNS authentication")
+			}
+		}
+
 		// Create DoH client
 		dohClient, err := client.NewDoHClient(cfg.Client)
 		if err != nil {
@@ -343,9 +413,77 @@ var versionCmd = &cobra.Command{
 	},
 }
 
+// License command
+var licenseCmd = &cobra.Command{
+	Use:   "license",
+	Short: "License management and validation",
+	Long:  "Manage and validate your Squawk DNS license and user tokens",
+}
+
+// License status command
+var licenseStatusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Check license status",
+	Long:  "Validate and display current license or user token status",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Load configuration
+		cfg, err := loadConfiguration()
+		if err != nil {
+			log.Fatalf("Configuration error: %v", err)
+		}
+
+		// Create validator
+		validator := license.NewValidator(cfg.License)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		// Check status
+		status, err := validator.GetStatus(ctx)
+		if err != nil {
+			fmt.Printf("Error validating license: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Display status
+		if status.Valid {
+			fmt.Println("✓ License is valid")
+		} else {
+			fmt.Println("✗ License is invalid or expired")
+		}
+
+		if status.Message != "" {
+			fmt.Printf("Message: %s\n", status.Message)
+		}
+
+		if status.ExpiresAt != nil {
+			fmt.Printf("Expires: %s\n", *status.ExpiresAt)
+		}
+
+		if status.UserEmail != nil {
+			fmt.Printf("User: %s\n", *status.UserEmail)
+		}
+
+		if status.TokensUsed != nil && status.MaxTokens != nil {
+			fmt.Printf("Token Usage: %d/%d\n", *status.TokensUsed, *status.MaxTokens)
+		}
+
+		if !status.Valid {
+			fmt.Println("\nContact your administrator for license assistance.")
+			os.Exit(1)
+		}
+	},
+}
+
+// License portal command
+// License portal command removed - customers should contact administrator for license assistance
+
 func init() {
 	// Add config subcommands
 	configCmd.AddCommand(configShowCmd)
 	configCmd.AddCommand(configEnvCmd)
 	configCmd.AddCommand(configGenerateCmd)
+
+	// Add license subcommands
+	licenseCmd.AddCommand(licenseStatusCmd)
+	// License portal command removed - customers should contact administrator
 }

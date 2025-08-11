@@ -154,9 +154,72 @@ Automated GitHub CI/CD release pipeline with comprehensive release notes:
 4. Platform-specific installation instructions
 5. GitHub releases created with comprehensive documentation
 
+# Subscription Licensing System
+Squawk DNS now includes a comprehensive subscription-based licensing system for premium features:
+
+## License Server Configuration
+- **Domain**: `license.squawkdns.com` - hardcoded license server domain
+- **Technology**: py4web-based license management portal
+- **Database**: PostgreSQL for license and token storage
+- **Authentication**: Sales team access only (no customer portal)
+
+## License Management
+- **Sales Portal**: `/sales/dashboard` - Create and manage customer licenses (sales team only)
+- **License Format**: `SQWK-XXXX-XXXX-XXXX-XXXX-YYYY` (with checksum validation)
+- **License Distribution**: Sales team emails license keys directly to customers
+- **Customer Access**: Customers do NOT access license.squawkdns.com directly
+
+## DNS Server License Integration
+- **License Validation**: `USE_LICENSE_SERVER=true` enables subscription validation
+- **Server Flag**: `--license-server` or `-l` enables license mode
+- **Token Validation**: Real-time validation via license server API endpoints
+- **Environment**: `LICENSE_SERVER_URL=https://license.squawkdns.com`
+
+## Go Client License Integration
+- **Daily Validation**: License checked once per day (not per query)
+- **Smart Caching**: 24-hour cache minimizes license server load
+- **Offline Resilience**: Falls back to cached validation if license server unavailable
+- **Backward Compatibility**: Works without license (with warnings)
+
+## License Environment Variables
+- `SQUAWK_LICENSE_SERVER_URL`: License server URL (default: https://license.squawkdns.com)
+- `SQUAWK_LICENSE_KEY`: Customer license key for evaluation/setup
+- `SQUAWK_USER_TOKEN`: Individual user token (preferred for production)
+- `SQUAWK_VALIDATE_ONLINE`: Enable online validation vs cache-only (default: true)
+- `SQUAWK_LICENSE_CACHE_TIME`: Cache time in minutes (default: 1440 = 24 hours)
+- `USE_LICENSE_SERVER`: Enable license server validation in DNS server (default: false)
+- `LICENSE_KEY`: DNS server license key for validation
+
+## Premium vs Community Features
+### Community (Open Source)
+- Basic DNS resolution
+- Standard DNS-over-HTTPS support
+- mTLS authentication
+- Basic caching
+- Single-token authentication
+
+### Premium (Licensed)
+- **Selective DNS Routing**: Per-user/group access to private and public DNS entries
+- **Advanced Token Management**: Individual user tokens with usage tracking
+- **Priority DNS Resolution**: Faster query processing for licensed users
+- **Enhanced Caching**: Advanced cache optimization and performance tuning
+- **Detailed Analytics**: Comprehensive usage reporting and monitoring
+- **Technical Support**: Professional support and assistance
+- **Multi-tenant Architecture**: Secure isolation between different user groups
+- **Enterprise Features**: Advanced logging, monitoring, and integration capabilities
+
+## Key Premium Benefit: Selective DNS Routing
+The major advantage of premium licensing is the ability to have **one secure DNS endpoint that selectively provides private and public DNS entries based on user or group permissions**:
+- Internal users get access to both private corporate DNS entries AND public internet DNS
+- External users only get public DNS resolution
+- Different user groups can have different levels of DNS access
+- Secure authentication ensures only authorized users can resolve private DNS entries
+- Single DNS infrastructure serves multiple security contexts
+
 # Important Notes
 - **Documentation Domain**: All documentation references should use `squawkdns.com`
 - **Web Console**: Default available at `http://localhost:8000/dns_console`
+- **License Portal**: Sales team only at `https://license.squawkdns.com/sales/dashboard` (internal access)
 - **Health Monitoring**: System tray provides real-time server health status
 - **DNS Validation**: All components implement RFC 1035 compliant validation
 - **Multi-Server Support**: Clients support multiple DNS servers with automatic failover
