@@ -21,6 +21,7 @@ pyotp>=2.8.0
 qrcode>=7.4.2
 Pillow>=10.0.0
 python-whois>=0.8.0
+ipwhois>=1.2.0
 
 # Enterprise SSO dependencies
 # Note: These require system packages to be installed:

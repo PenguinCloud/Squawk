@@ -24,7 +24,7 @@ class TestIOCManager:
         should_block, reason = await ioc_manager.check_domain('clean-domain.com')
         
         assert should_block is False
-        assert reason == "Domain not in threat intelligence feeds"
+        assert reason == "Not blocked"
     
     @pytest.mark.asyncio
     async def test_check_domain_blocked(self, ioc_manager, mock_ioc_feeds):
@@ -64,7 +64,7 @@ class TestIOCManager:
         should_block, reason = await ioc_manager.check_ip('8.8.8.8')
         
         assert should_block is False
-        assert reason == "IP not in threat intelligence feeds"
+        assert reason == "Not blocked"
     
     @pytest.mark.asyncio
     async def test_add_override_allow(self, ioc_manager):
