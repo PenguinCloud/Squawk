@@ -1,10 +1,151 @@
 # Squawk DNS System Release Notes
 
-## v1.1.2 - Maintenance and Security Release
+## v1.1.2 - Threat Intelligence and Security Enhancement Release
 
 **Release Date**: August 2025  
-**Release Type**: Patch Release with CI/CD and Security Fixes  
+**Release Type**: Major Feature Release with Advanced Threat Intelligence Support  
 **Breaking Changes**: None (backward compatible)
+
+### 🛡️ Advanced Threat Intelligence Integration (NEW)
+
+#### TAXII 2.x / STIX 2.1 Support
+- **TAXII 2.x Client**: Full TAXII 2.x server integration with collection discovery and authentication
+- **STIX 2.1 Parser**: Complete STIX 2.1 bundle parsing with support for indicators, malware, and cyber observables  
+- **Authentication Support**: Bearer token, Basic Auth, and API key authentication for TAXII servers
+- **Incremental Updates**: Support for `added_after` timestamp filtering for efficient updates
+- **SSL Configuration**: Configurable SSL verification for internal or testing TAXII servers
+- **Multi-Object Parsing**: Extracts indicators from STIX Indicators, Malware descriptions, and Cyber Observable Objects
+
+#### OpenIOC Format Support  
+- **Enhanced OpenIOC Parser**: Complete IOC XML parsing with network indicator extraction
+- **Context Awareness**: Extracts IOC metadata including names, descriptions, and context types
+- **Network Indicator Focus**: Prioritizes DNS/domain and IP indicators relevant to DNS blocking
+- **URL Extraction**: Automatically extracts domains from URL indicators in OpenIOC files
+- **IP Range Support**: Handles CIDR notation and IP ranges in OpenIOC indicators
+- **Metadata Preservation**: Maintains OpenIOC context and attribution information
+
+#### Community Threat Intelligence Feeds (FREE)
+- **1 Feed Limit**: Community users get access to one configurable threat intelligence feed
+- **Popular Feed Templates**: Pre-configured templates for STIX, TAXII, and OpenIOC feeds
+- **Format Support**: TXT, CSV, JSON, XML, STIX 2.1, OpenIOC, YARA, and Snort rule parsing
+- **Automatic Updates**: Configurable update intervals (1-24 hours) with automatic feed refresh
+- **Real-time Blocking**: Immediate DNS blocking of indicators from threat intelligence feeds
+
+#### Enterprise Self-Hosted ($5/user/month)
+- **Unlimited Feeds**: No limits on number of threat intelligence sources
+- **Admin Configuration Interface**: Web-based threat feed management and configuration
+- **Advanced Parsing**: Support for complex STIX relationships and advanced OpenIOC contexts
+- **Priority Processing**: Enterprise feeds get processing priority and faster update cycles
+- **Self-Managed Infrastructure**: Customer controls deployment and updates
+
+#### Enterprise Cloud-Hosted ($7/user/month)
+- **All Self-Hosted Features**: Complete enterprise feature set
+- **Managed Infrastructure**: Penguin Technologies operates and maintains servers
+- **Custom Feed Development**: Support for proprietary and custom threat intelligence formats
+- **Advanced Threat Intelligence Curation**: Enhanced and curated threat feeds
+- **99.9% SLA**: Guaranteed uptime with redundant infrastructure
+- **Global CDN**: Edge locations for optimal performance
+
+### 🔧 Technical Implementation Details
+
+#### TAXII 2.x Client Architecture
+- **Discovery Protocol**: Automatic API root and collection discovery
+- **Robust Authentication**: Support for multiple auth methods with fallback mechanisms
+- **Incremental Synchronization**: Efficient updates using timestamps to reduce bandwidth
+- **Error Handling**: Comprehensive retry logic with exponential backoff
+- **SSL/TLS Flexibility**: Configurable certificate validation for enterprise environments
+
+#### Enhanced IOC Processing Engine
+- **Multi-Format Parser**: Unified parsing engine supporting 8+ threat intelligence formats
+- **Confidence Scoring**: Intelligent confidence mapping from various feed formats
+- **Contextual Extraction**: Preserves threat attribution and contextual information
+- **Performance Optimization**: In-memory caching with database persistence
+- **Real-time Integration**: Immediate DNS blocking without service restart
+
+#### Database Schema Enhancements
+```sql
+-- New threat intelligence tables
+ioc_feeds          -- Feed configurations and metadata
+ioc_entries        -- Individual threat indicators
+ioc_overrides      -- User/token specific overrides
+ioc_stats          -- Performance and usage statistics
+```
+
+#### Environment Variables for Threat Intelligence
+```bash
+# Community Threat Intelligence (1 feed limit)
+ENABLE_THREAT_INTEL=true
+THREAT_FEED_UPDATE_HOURS=6
+MAX_COMMUNITY_FEEDS=1
+
+# Enterprise Threat Intelligence (unlimited)
+ENABLE_ENTERPRISE_THREAT_INTEL=true
+MAX_ENTERPRISE_FEEDS=unlimited
+THREAT_INTEL_PRIORITY_PROCESSING=true
+
+# TAXII Configuration
+TAXII_SERVER_URL=https://taxii-server.com/taxii2/
+TAXII_COLLECTION_ID=indicators
+TAXII_AUTH_TYPE=bearer
+TAXII_TOKEN=your-token-here
+TAXII_VERIFY_SSL=true
+
+# OpenIOC Configuration  
+OPENIOC_EXTRACT_NETWORK=true
+OPENIOC_EXTRACT_FILE=false
+OPENIOC_CONFIDENCE_DEFAULT=75
+```
+
+### 💰 New Enterprise Pricing Structure
+
+Squawk DNS now offers three distinct tiers to meet different organizational needs:
+
+#### Community Edition (Free)
+**Perfect for individual users and small teams**
+- ✅ Basic DNS resolution and caching
+- ✅ Standard DNS-over-HTTPS support
+- ✅ mTLS authentication
+- ✅ 1 threat intelligence feed
+- ✅ Basic web console
+- ✅ Community support via GitHub
+
+#### Enterprise Self-Hosted ($5/user/month)
+**Ideal for organizations wanting control over their infrastructure**
+- ✅ **All Community Features**
+- ✅ **Unlimited threat intelligence feeds** with advanced parsers
+- ✅ **Selective DNS routing** with per-user/group access control
+- ✅ **Advanced token management** and user authentication
+- ✅ **Multi-tenant architecture** with organizational isolation
+- ✅ **SAML/LDAP/SSO integration** for enterprise identity providers
+- ✅ **Priority DNS processing** for faster response times
+- ✅ **Enhanced caching** with advanced optimization
+- ✅ **Technical support** with SLA guarantees
+- ✅ **Self-managed** - customer controls infrastructure and updates
+
+#### Enterprise Cloud-Hosted ($7/user/month)
+**Complete managed solution with enterprise-grade reliability**
+- ✅ **All Self-Hosted Features**
+- ✅ **Managed infrastructure** operated by Penguin Technologies
+- ✅ **99.9% SLA** with redundant, fault-tolerant infrastructure
+- ✅ **Automatic updates** with zero-downtime deployments
+- ✅ **24/7 monitoring** with proactive alerting and incident response
+- ✅ **Compliance reporting** for SOC2, HIPAA, GDPR requirements  
+- ✅ **Global CDN** with edge locations for optimal worldwide performance
+- ✅ **Advanced threat intelligence curation** with enhanced feed quality
+- ✅ **Custom integrations** and dedicated development resources
+- ✅ **24/7 dedicated support** with guaranteed response times
+- ✅ **Priority processing** - highest priority across all users
+
+### 🎯 Choosing the Right Tier
+
+| Use Case | Recommended Tier | Why |
+|----------|------------------|-----|
+| Individual/Home | Community | Free, basic features sufficient |
+| Small Business | Self-Hosted | Cost-effective, full enterprise features |
+| Mid-size Company | Self-Hosted | Control infrastructure, reduced costs |
+| Enterprise Corp | Cloud-Hosted | Managed service, SLA, compliance |
+| Regulated Industry | Cloud-Hosted | Compliance reporting, audit trails |
+| Global Organization | Cloud-Hosted | Multi-region, CDN performance |
 
 ### 🛠️ Build System & CI/CD Improvements
 

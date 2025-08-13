@@ -192,26 +192,43 @@ Squawk DNS now includes a comprehensive subscription-based licensing system for 
 - `USE_LICENSE_SERVER`: Enable license server validation in DNS server (default: false)
 - `LICENSE_KEY`: DNS server license key for validation
 
-## Enterprise vs Community Features
-### Community (Open Source)
+## Feature Comparison by Edition
+
+### Community Edition (Free)
 - Basic DNS resolution
 - Standard DNS-over-HTTPS support
 - mTLS authentication
 - Basic caching
 - Single-token authentication
+- 1 threat intelligence feed
+- Basic web console
 
-### Enterprise (Licensed)
+### Enterprise Self-Hosted ($5/user/month)
+- **All Community Features**
 - **Selective DNS Routing**: Per-user/group access to private and public DNS entries
 - **Advanced Token Management**: Individual user tokens with usage tracking
 - **Priority DNS Resolution**: Faster query processing for licensed users
 - **Enhanced Caching**: Advanced cache optimization and performance tuning
-- **Detailed Analytics**: Comprehensive usage reporting and monitoring
-- **Technical Support**: Professional support and assistance
+- **Unlimited Threat Intelligence**: No feed limits, advanced parsers
 - **Multi-tenant Architecture**: Secure isolation between different user groups
 - **SAML/LDAP/SSO Integration**: Enterprise identity provider integration
 - **SCIM Provisioning**: Automated user provisioning and deprovisioning
+- **Technical Support**: Professional support and assistance
+- **Self-Managed**: Customer controls infrastructure and updates
+
+### Enterprise Cloud-Hosted ($7/user/month)
+- **All Self-Hosted Features**
+- **Managed Infrastructure**: Penguin Technologies operates and maintains servers
+- **99.9% SLA**: Guaranteed uptime with redundant infrastructure
+- **Automatic Updates**: Zero-downtime updates and security patches
+- **Advanced Monitoring**: 24/7 monitoring with proactive alerting
+- **Compliance Reporting**: SOC2, HIPAA, GDPR automated compliance reports
+- **24/7 Support**: Dedicated support team with guaranteed response times
+- **Global Infrastructure**: Multi-region deployment with CDN edge locations
+- **Advanced Threat Intel**: Curated and enhanced threat intelligence feeds
+- **Custom Development**: Dedicated engineering resources for custom features
 - **Enterprise Monitoring**: Advanced logging, alerting, and SIEM integration
-- **Compliance Reporting**: GDPR, HIPAA, SOX compliance reports
+- **Priority Processing**: Highest priority request processing across all users
 
 ## Key Enterprise Benefit: Selective DNS Routing
 The major advantage of enterprise licensing is the ability to have **one secure DNS endpoint that selectively provides private and public DNS entries based on user or group permissions**:
@@ -289,13 +306,47 @@ The selective DNS routing system is built on a token-based identity and group me
 - `ldap_sync_log`: LDAP synchronization audit trail
 
 # Enterprise Feature Implementation
-All enterprise features are implemented with proper license enforcement:
+All enterprise features are implemented with proper license enforcement across two enterprise tiers:
+
+## Enterprise Tier Structure
+
+### Community Edition (Free)
+- Basic DNS resolution and caching
+- Single threat intelligence feed (1 feed limit)
+- Standard DNS-over-HTTPS support
+- mTLS authentication
+- Basic web console
+
+### Enterprise Self-Hosted ($5/user/month)
+- All Community features
+- Unlimited threat intelligence feeds
+- Advanced token management
+- Selective DNS routing
+- Priority DNS resolution
+- Enhanced caching and analytics
+- Technical support
+- Multi-tenant architecture
+- SAML/LDAP/SSO integration
+- Self-managed infrastructure
+
+### Enterprise Cloud-Hosted ($7/user/month)  
+- All Self-Hosted features
+- Penguin Technologies managed infrastructure
+- 99.9% SLA with redundancy
+- Automatic updates and patching
+- Advanced monitoring and alerting
+- Compliance reporting (SOC2, HIPAA, GDPR)
+- 24/7 managed support
+- Global CDN and edge locations
+- Advanced threat intelligence curation
+- Custom integrations and development
 
 ## License Enforcement Model
-- **Feature Gates**: Each enterprise feature checks license status before activation
-- **Graceful Degradation**: Unlicensed features return appropriate error messages
+- **Feature Gates**: Each feature tier checks appropriate license status before activation
+- **Graceful Degradation**: Unlicensed features return appropriate error messages with upgrade prompts
 - **Real-time Validation**: License status checked via license server API
 - **Offline Resilience**: Cached license validation for temporary connectivity loss
+- **Tier Detection**: Automatic detection of Self-Hosted vs Cloud-Hosted licensing
 
 ## Priority DNS Resolution
 - **Request Queuing**: Enterprise users get priority in processing queue
@@ -410,12 +461,81 @@ All new features utilize py4web's native capabilities:
 - **mTLS Support**: Certificate validation for client configuration API
 - **Permission System**: Role-based access control for all features
 
-# Enterprise License Requirements
-- **SAML/SSO**: Enterprise license required for identity provider integration
-- **SCIM Provisioning**: Enterprise-only automated user management
+# License Requirements by Feature
+
+## Community Edition Features (Free)
+- Basic DNS resolution and caching
+- Standard DNS-over-HTTPS support  
+- mTLS authentication
+- Single threat intelligence feed
+- Basic web console
+- Community support via GitHub
+
+## Enterprise Self-Hosted Features ($5/user/month)
+- **All Community Features**
+- **SAML/SSO**: Enterprise identity provider integration
+- **SCIM Provisioning**: Automated user management
 - **Advanced Analytics**: Detailed reporting and compliance features
 - **Priority Support**: Professional support with SLA guarantees
 - **Multi-tenant**: Organization-level isolation and management
+- **Unlimited Threat Intel**: No limits on threat intelligence feeds
+- **Selective DNS Routing**: Per-user/group access control
+- **Self-Managed Infrastructure**: Customer controls deployment and updates
+
+## Enterprise Cloud-Hosted Exclusive Features ($7/user/month)
+
+### 🏢 Managed Infrastructure
+- **Penguin Technologies Operated**: Professional DevOps team manages all infrastructure
+- **Multi-Region Deployment**: Geographically distributed servers for optimal performance
+- **Auto-Scaling**: Automatic resource scaling based on demand
+- **High Availability**: 99.9% uptime SLA with redundant infrastructure
+- **Disaster Recovery**: Automated backup and recovery procedures
+
+### 🔄 Automatic Operations
+- **Zero-Downtime Updates**: Seamless rolling updates without service interruption
+- **Security Patching**: Automatic security updates and vulnerability management
+- **Configuration Management**: Centralized configuration with change tracking
+- **Health Monitoring**: 24/7 automated monitoring with proactive alerting
+
+### 📊 Advanced Monitoring & Alerting
+- **Real-Time Dashboards**: Live system performance and usage metrics
+- **Predictive Analytics**: AI-powered capacity planning and performance optimization
+- **Custom Alerting**: Configurable alerts for performance, security, and availability
+- **Incident Response**: Dedicated NOC team for 24/7 incident management
+
+### 📋 Compliance & Reporting
+- **SOC2 Type II**: Automated SOC2 compliance reporting and audits
+- **HIPAA Compliance**: Healthcare data protection with encrypted storage
+- **GDPR Compliance**: EU data protection with data residency controls
+- **Custom Compliance**: Support for industry-specific compliance requirements
+- **Audit Trails**: Comprehensive logging for regulatory compliance
+
+### 🌐 Global Performance Infrastructure
+- **CDN Integration**: Cloudflare-powered global content delivery network
+- **Edge Locations**: DNS resolution from geographically closest locations
+- **Anycast Network**: Automatic routing to optimal servers
+- **Network Optimization**: Premium network peering for reduced latency
+
+### 🎯 Advanced Threat Intelligence
+- **Curated Feeds**: Professional threat intelligence curation and validation
+- **Custom Threat Intel**: Penguin Technologies proprietary threat research
+- **Real-Time Updates**: Sub-minute threat intelligence updates
+- **Threat Attribution**: Enhanced context and attribution for security events
+- **Custom IOC Integration**: Private threat intelligence feed integration
+
+### 👥 Dedicated Support & Development
+- **24/7 Dedicated Support**: Guaranteed response times with escalation procedures
+- **Dedicated Customer Success Manager**: Personal account management
+- **Custom Feature Development**: Dedicated engineering resources for customer-specific needs
+- **Priority Feature Requests**: Influence on product roadmap and feature prioritization
+- **Direct Engineering Access**: Direct communication with development team
+
+### 🔐 Enterprise Security Enhancements
+- **Advanced Threat Detection**: ML-based anomaly detection and threat hunting
+- **Zero Trust Architecture**: Identity-based access with continuous verification
+- **Security Operations Center**: 24/7 security monitoring and incident response
+- **Penetration Testing**: Regular security assessments and vulnerability testing
+- **Threat Intelligence Sharing**: Bi-directional threat intelligence with customers
 
 # Important Notes
 - **Documentation Domain**: All documentation references should use `squawkdns.com`
