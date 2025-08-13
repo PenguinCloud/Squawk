@@ -85,7 +85,7 @@ export default function Pricing() {
                     <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Multi-tenant architecture</li>
                     <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Professional support & SLA</li>
                   </ul>
-                  <a href="mailto:sales@penguincloud.io" className="btn btn-primary btn-lg w-100">
+                  <a href="mailto:sales@penguintech.io" className="btn btn-primary btn-lg w-100">
                     <i className="fas fa-rocket me-2"></i>Start Enterprise
                   </a>
                 </div>
@@ -113,7 +113,7 @@ export default function Pricing() {
                     <li className="mb-2"><i className="fas fa-check text-success me-2"></i>Dedicated support team</li>
                     <li className="mb-2"><i className="fas fa-check text-success me-2"></i>SLA guarantees</li>
                   </ul>
-                  <a href="mailto:sales@penguincloud.io" className="btn btn-warning btn-lg w-100">
+                  <a href="mailto:sales@penguintech.io" className="btn btn-warning btn-lg w-100">
                     <i className="fas fa-handshake me-2"></i>Contact Sales
                   </a>
                 </div>
@@ -195,7 +195,7 @@ export default function Pricing() {
                   </h2>
                   <div id="faq5" className="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
                     <div className="accordion-body">
-                      Yes! We offer significant discounts for annual billing and volume licensing for organizations with 100+ users. Contact our sales team at sales@penguincloud.io for custom pricing.
+                      Yes! We offer significant discounts for annual billing and volume licensing for organizations with 100+ users. Contact our sales team at sales@penguintech.io for custom pricing.
                     </div>
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export default function Pricing() {
                 <Link href="/download/" className="btn btn-light btn-lg">
                   <i className="fab fa-github me-2"></i>Try Community Edition Free
                 </Link>
-                <a href="mailto:sales@penguincloud.io" className="btn btn-outline-light btn-lg">
+                <a href="mailto:sales@penguintech.io" className="btn btn-outline-light btn-lg">
                   <i className="fas fa-crown me-2"></i>Get Enterprise License
                 </a>
                 <Link href="/documentation/" className="btn btn-outline-light btn-lg">
