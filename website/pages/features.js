@@ -81,21 +81,21 @@ export default function Features() {
                     <div className="row">
                       <div className="col-6">
                         <div className="p-2 bg-success bg-opacity-25 rounded mb-2">
-                          <small><strong>Internal User Query</strong></small><br>
+                          <small><strong>Internal User Query</strong></small><br />
                           <code className="text-success">internal.corp.com → 10.0.50.5</code>
                         </div>
                         <div className="p-2 bg-info bg-opacity-25 rounded">
-                          <small><strong>Public Query</strong></small><br>
+                          <small><strong>Public Query</strong></small><br />
                           <code className="text-info">google.com → 142.250.191.14</code>
                         </div>
                       </div>
                       <div className="col-6">
                         <div className="p-2 bg-danger bg-opacity-25 rounded mb-2">
-                          <small><strong>External User Query</strong></small><br>
+                          <small><strong>External User Query</strong></small><br />
                           <code className="text-danger">internal.corp.com → NXDOMAIN</code>
                         </div>
                         <div className="p-2 bg-info bg-opacity-25 rounded">
-                          <small><strong>Public Query</strong></small><br>
+                          <small><strong>Public Query</strong></small><br />
                           <code className="text-info">google.com → 142.250.191.14</code>
                         </div>
                       </div>
