@@ -130,70 +130,58 @@ jobs:
         working-directory: dns-client-go
         run: go mod download
 
-      # Build for all platforms
-      - name: Build Linux AMD64
+      # Build for all platforms using containerized approach for consistency
+      - name: Build All Platforms (Containerized)
         if: steps.tag_check.outputs.EXISTS == 'false'
         working-directory: dns-client-go
         run: |
-          mkdir -p build/linux-amd64
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/linux-amd64/${{ env.APP_NAME }} \
-            ./cmd/${{ env.APP_NAME }}
-
-      - name: Build Linux ARM64
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/linux-arm64
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/linux-arm64/${{ env.APP_NAME }} \
-            ./cmd/${{ env.APP_NAME }}
-
-      - name: Build macOS AMD64
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/darwin-amd64
-          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/darwin-amd64/${{ env.APP_NAME }} \
-            ./cmd/${{ env.APP_NAME }}
-
-      - name: Build macOS ARM64
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/darwin-arm64
-          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/darwin-arm64/${{ env.APP_NAME }} \
-            ./cmd/${{ env.APP_NAME }}
-
-      - name: Build Windows AMD64
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/windows-amd64
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/windows-amd64/${{ env.APP_NAME }}.exe \
-            ./cmd/${{ env.APP_NAME }}
-
-      # Create macOS universal binary
-      - name: Create macOS Universal Binary
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/darwin-universal
-          # Install lipo tool (available on GitHub runners)
-          lipo -create -output build/darwin-universal/${{ env.APP_NAME }} \
-            build/darwin-amd64/${{ env.APP_NAME }} \
-            build/darwin-arm64/${{ env.APP_NAME }}
-          # Verify the universal binary
-          file build/darwin-universal/${{ env.APP_NAME }}
-          lipo -info build/darwin-universal/${{ env.APP_NAME }}
+          # Use Docker for consistent cross-compilation environment
+          docker run --rm -v $(pwd):/workspace -w /workspace \
+            golang:${{ env.GO_VERSION }}-alpine \
+            sh -c '
+              apk add --no-cache git
+              
+              # Build for all platforms
+              echo "Building for all platforms..."
+              
+              # Linux AMD64
+              mkdir -p build/linux-amd64
+              CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+                -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/linux-amd64/${{ env.APP_NAME }} \
+                ./cmd/${{ env.APP_NAME }}
+              
+              # Linux ARM64
+              mkdir -p build/linux-arm64
+              CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build \
+                -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/linux-arm64/${{ env.APP_NAME }} \
+                ./cmd/${{ env.APP_NAME }}
+              
+              # macOS AMD64
+              mkdir -p build/darwin-amd64
+              CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build \
+                -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/darwin-amd64/${{ env.APP_NAME }} \
+                ./cmd/${{ env.APP_NAME }}
+              
+              # macOS ARM64 (Apple Silicon)
+              mkdir -p build/darwin-arm64
+              CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build \
+                -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/darwin-arm64/${{ env.APP_NAME }} \
+                ./cmd/${{ env.APP_NAME }}
+              
+              # Windows AMD64
+              mkdir -p build/windows-amd64
+              CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
+                -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/windows-amd64/${{ env.APP_NAME }}.exe \
+                ./cmd/${{ env.APP_NAME }}
+              
+              echo "Build completed for all platforms"
+              find build -name "*${{ env.APP_NAME }}*" -type f -exec ls -la {} \;
+            '
 
       # Create Debian packages
       - name: Create Debian Package (AMD64)
@@ -336,7 +324,6 @@ jobs:
           # macOS packages  
           cd ../darwin-amd64 && tar -czf ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-amd64.tar.gz ${{ env.APP_NAME }}
           cd ../darwin-arm64 && tar -czf ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-arm64.tar.gz ${{ env.APP_NAME }}
-          cd ../darwin-universal && tar -czf ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-universal.tar.gz ${{ env.APP_NAME }}
           
           # Windows packages
           cd ../windows-amd64 && zip -q ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-windows-amd64.zip ${{ env.APP_NAME }}.exe
@@ -398,17 +385,6 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-linux-arm64.tar.gz
           asset_name: ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-linux-arm64.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload macOS Universal Archive
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-universal.tar.gz
-          asset_name: ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-universal.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload macOS AMD64 Archive
@@ -532,7 +508,7 @@ jobs:
         run: |
           echo "✅ Squawk DNS Client (Go) Release Complete!"
           echo "Version: $(cat .version)"
-          echo "Platforms: Linux (amd64, arm64), macOS (universal, amd64, arm64), Windows (amd64)"
+          echo "Platforms: Linux (amd64, arm64), macOS (amd64, arm64), Windows (amd64)"
           echo "Packages: Native binaries, Debian packages, Docker multi-arch image"
           echo "Features: DoH, mTLS, DNS forwarding, YAML config, environment variables"
           echo "Performance: ~10ms cold start, ~15MB memory, single binary"
