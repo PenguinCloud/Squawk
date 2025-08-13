@@ -102,12 +102,12 @@ sudo dpkg -i squawk-dns-client_2.0.0_amd64.deb`}</code></pre>
           <div className="row">
             <div className="col-lg-12 text-center mb-5">
               <h2 className="fw-bold">Choose Your Edition</h2>
-              <p className="text-muted">Community Open Source or Enterprise Licensed - both with enterprise-grade security</p>
+              <p className="text-muted">Community, Enterprise, or Embedded - all with enterprise-grade security</p>
             </div>
           </div>
           
           <div className="row g-4 mb-5">
-            <div className="col-lg-6">
+            <div className="col-lg-4">
               <div className="card h-100 border-0 shadow-sm">
                 <div className="card-header bg-success text-white text-center">
                   <h4 className="mb-0"><i className="fab fa-oss me-2"></i>Community Edition</h4>
@@ -132,7 +132,7 @@ sudo dpkg -i squawk-dns-client_2.0.0_amd64.deb`}</code></pre>
               </div>
             </div>
             
-            <div className="col-lg-6">
+            <div className="col-lg-4">
               <div className="card h-100 border-primary border-3 shadow-lg position-relative">
                 <div className="position-absolute top-0 start-50 translate-middle">
                   <span className="badge bg-warning text-dark fs-6 px-3 py-2">Most Popular</span>
@@ -164,6 +164,39 @@ sudo dpkg -i squawk-dns-client_2.0.0_amd64.deb`}</code></pre>
                     <Link href="/pricing" className="btn btn-primary btn-lg">
                       <i className="fas fa-rocket me-2"></i>Start Enterprise
                     </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-lg-4">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-header bg-info text-white text-center">
+                  <h4 className="mb-0"><i className="fas fa-microchip me-2"></i>Embedded Edition</h4>
+                  <p className="mb-0 mt-2"><small>License for Product Integration</small></p>
+                </div>
+                <div className="card-body p-4">
+                  <div className="mb-3 p-3 bg-info bg-opacity-10 rounded">
+                    <h6 className="text-info mb-2"><i className="fas fa-puzzle-piece me-2"></i>Key Embedded Benefits:</h6>
+                    <p className="mb-0 fw-bold">
+                      <strong>Product Integration</strong> - License Squawk DNS to embed inside your own products, 
+                      applications, or hardware solutions. Custom pricing and terms available.
+                    </p>
+                  </div>
+                  <ul className="list-unstyled">
+                    <li className="mb-2"><i className="fas fa-check text-info me-2"></i><strong>All Community features</strong></li>
+                    <li className="mb-2"><i className="fas fa-puzzle-piece text-info me-2"></i>Embed in your products</li>
+                    <li className="mb-2"><i className="fas fa-puzzle-piece text-info me-2"></i>White-label licensing</li>
+                    <li className="mb-2"><i className="fas fa-puzzle-piece text-info me-2"></i>Custom branding options</li>
+                    <li className="mb-2"><i className="fas fa-puzzle-piece text-info me-2"></i>Redistribution rights</li>
+                    <li className="mb-2"><i className="fas fa-puzzle-piece text-info me-2"></i>Volume pricing discounts</li>
+                    <li className="mb-2"><i className="fas fa-puzzle-piece text-info me-2"></i>Custom support terms</li>
+                    <li className="mb-2"><i className="fas fa-puzzle-piece text-info me-2"></i>Pricing negotiated per use case</li>
+                  </ul>
+                  <div className="text-center mt-4">
+                    <a href="mailto:sales@penguintech.io" className="btn btn-info btn-lg">
+                      <i className="fas fa-envelope me-2"></i>Contact Sales
+                    </a>
                   </div>
                 </div>
               </div>
