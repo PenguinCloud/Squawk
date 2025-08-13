@@ -1,7 +1,7 @@
 # Squawk DNS Documentation
 
 <div class="hero-banner">
-  <h2>🛡️ Squawk DNS, a Penguin Cloud Solution</h2>
+  <h2>🛡️ Squawk DNS, a Penguin Technologies Solution</h2>
   <p><strong>Secure DNS-over-HTTPS system with enterprise authentication, mTLS support, and comprehensive security features.</strong></p>
 </div>
 
@@ -107,5 +107,5 @@ Squawk DNS is released under the [AGPL v3 License](LICENSE.md).
 ---
 
 <div class="footer-note">
-  <p><em>Squawk DNS is a Penguin Cloud Solution - Enterprise-grade DNS security for modern organizations.</em></p>
+  <p><em>Squawk DNS is a Penguin Technologies Solution - Enterprise-grade DNS security for modern organizations.</em></p>
 </div>

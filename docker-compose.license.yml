@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  license-db:
+    image: postgres:16-alpine
+    container_name: squawk-license-db
+    environment:
+      POSTGRES_DB: license_db
+      POSTGRES_USER: license
+      POSTGRES_PASSWORD: license_secure_password_change_me
+    volumes:
+      - license_db_data:/var/lib/postgresql/data
+    networks:
+      - squawk-network
+    restart: unless-stopped
+
+  license-server:
+    build:
+      context: ./license-server
+      dockerfile: Dockerfile
+    container_name: squawk-license-server
+    environment:
+      DATABASE_URL: "postgresql://license:license_secure_password_change_me@license-db/license_db"
+      SECRET_KEY: ${LICENSE_SECRET_KEY:-squawk-license-secret-production-2024}
+      SERVER_HOST: "0.0.0.0"
+      SERVER_PORT: "8001"
+      PRODUCTION: "true"
+      WORKERS: "4"
+    ports:
+      - "8001:8001"
+    depends_on:
+      - license-db
+    networks:
+      - squawk-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.license.rule=Host(`license.squawkdns.com`)"
+      - "traefik.http.routers.license.tls=true"
+      - "traefik.http.routers.license.tls.certresolver=letsencrypt"
+      - "traefik.http.services.license.loadbalancer.server.port=8001"
+
+  dns-server:
+    build:
+      context: ./dns-server
+      dockerfile: Dockerfile
+    container_name: squawk-dns-server
+    environment:
+      PORT: "8080"
+      USE_LICENSE_SERVER: "true"
+      LICENSE_SERVER_URL: "http://license-server:8001"
+      LICENSE_KEY: ${DNS_LICENSE_KEY:-}
+      CACHE_ENABLED: "true"
+      VALKEY_URL: "redis://valkey:6379"
+      LOG_LEVEL: "INFO"
+      ENABLE_BLACKLIST: ${ENABLE_BLACKLIST:-false}
+      ENABLE_MTLS: ${ENABLE_MTLS:-false}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - license-server
+      - valkey
+    networks:
+      - squawk-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dns.rule=Host(`dns.squawkdns.com`)"
+      - "traefik.http.routers.dns.tls=true"
+      - "traefik.http.routers.dns.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dns.loadbalancer.server.port=8080"
+
+  dns-console:
+    build:
+      context: ./dns-server
+      dockerfile: Dockerfile.console
+    container_name: squawk-dns-console
+    environment:
+      USE_LICENSE_SERVER: "true"
+      LICENSE_SERVER_URL: "http://license-server:8001"
+      LICENSE_KEY: ${DNS_LICENSE_KEY:-}
+      ALLOW_REGISTRATION: "false"
+      REQUIRE_MFA: ${REQUIRE_MFA:-false}
+      BRUTE_FORCE_PROTECTION: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - license-server
+    networks:
+      - squawk-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.console.rule=Host(`console.squawkdns.com`)"
+      - "traefik.http.routers.console.tls=true"
+      - "traefik.http.routers.console.tls.certresolver=letsencrypt"
+      - "traefik.http.services.console.loadbalancer.server.port=8000"
+
+  valkey:
+    image: valkey/valkey:7-alpine
+    container_name: squawk-valkey
+    command: valkey-server --appendonly yes
+    volumes:
+      - valkey_data:/data
+    networks:
+      - squawk-network
+    restart: unless-stopped
+
+  traefik:
+    image: traefik:v3.0
+    container_name: squawk-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@squawkdns.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8082:8080"  # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - squawk-network
+    restart: unless-stopped
+
+networks:
+  squawk-network:
+    driver: bridge
+
+volumes:
+  license_db_data:
+  valkey_data:

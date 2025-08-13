@@ -11,7 +11,7 @@ export default function Features() {
             <div className="col-lg-12 text-center">
               <div className="mb-3">
                 <span className="badge bg-light text-primary fs-6 px-3 py-2">
-                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Cloud Solution
+                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Technologies Solution
                 </span>
               </div>
               <h1 className="display-4 fw-bold mb-4">Enterprise DNS Features</h1>
@@ -21,14 +21,14 @@ export default function Features() {
         </div>
       </section>
 
-      {/* Premium Feature Highlight */}
+      {/* Enterprise Feature Highlight */}
       <section className="py-5 bg-light">
         <div className="container">
           <div className="row">
             <div className="col-lg-12 text-center mb-5">
               <div className="mb-3">
                 <span className="badge bg-primary fs-6 px-3 py-2">
-                  <i className="fas fa-crown me-2"></i>Premium Edition Exclusive
+                  <i className="fas fa-crown me-2"></i>Enterprise Edition Exclusive
                 </span>
               </div>
               <h2 className="fw-bold">Selective DNS Routing</h2>
@@ -41,7 +41,7 @@ export default function Features() {
               <div className="pe-lg-4">
                 <h4 className="fw-bold mb-3">Revolutionary DNS Security Architecture</h4>
                 <p className="mb-4">
-                  The game-changing feature that sets Squawk DNS Premium apart: serve different DNS responses 
+                  The game-changing feature that sets Squawk DNS Enterprise apart: serve different DNS responses 
                   to different users from a single secure endpoint, based on authentication and permissions.
                 </p>
                 
@@ -62,7 +62,7 @@ export default function Features() {
                 
                 <div className="mt-4">
                   <Link href="/pricing" className="btn btn-primary btn-lg me-3">
-                    <i className="fas fa-crown me-2"></i>Get Premium
+                    <i className="fas fa-crown me-2"></i>Get Enterprise
                   </Link>
                   <a href="mailto:sales@penguincloud.io" className="btn btn-outline-primary btn-lg">
                     <i className="fas fa-envelope me-2"></i>Contact Sales
@@ -176,20 +176,61 @@ export default function Features() {
               </div>
             </div>
 
-            {/* Monitoring & Logging */}
+            {/* Advanced Analytics & Threat Intelligence */}
             <div className="col-lg-4 col-md-6">
               <div className="card h-100 border-0 shadow-sm">
                 <div className="card-body text-center p-4">
                   <div className="feature-icon bg-warning text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style={{width: '80px', height: '80px'}}>
-                    <i className="fas fa-chart-line fa-2x"></i>
+                    <i className="fas fa-brain fa-2x"></i>
                   </div>
-                  <h5 className="card-title">Monitoring & Logging</h5>
+                  <h5 className="card-title">Advanced Analytics & Threat Intelligence</h5>
                   <ul className="list-unstyled text-start text-muted small">
-                    <li><i className="fas fa-check text-success me-2"></i>Real-time Health Monitoring</li>
-                    <li><i className="fas fa-check text-success me-2"></i>UDP Syslog Forwarding</li>
-                    <li><i className="fas fa-check text-success me-2"></i>Structured JSON Logging</li>
-                    <li><i className="fas fa-check text-success me-2"></i>System Tray Health Status</li>
-                    <li><i className="fas fa-check text-success me-2"></i>Performance Metrics</li>
+                    <li><i className="fas fa-crown text-warning me-1"></i> <i className="fas fa-check text-success me-2"></i>DNS Performance Monitoring with detailed timing analytics</li>
+                    <li><i className="fas fa-crown text-warning me-1"></i> <i className="fas fa-check text-success me-2"></i>Real-time WHOIS lookup service</li>
+                    <li><i className="fas fa-crown text-warning me-1"></i> <i className="fas fa-check text-success me-2"></i>Multiple IOC threat intelligence feeds</li>
+                    <li><i className="fas fa-check text-success me-2"></i>Prometheus metrics export</li>
+                    <li><i className="fas fa-check text-success me-2"></i>Comprehensive audit logging</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Performance Monitoring */}
+            <div className="col-lg-4 col-md-6">
+              <div className="card h-100 border-0 shadow-sm border-warning">
+                <div className="card-body text-center p-4">
+                  <div className="feature-icon bg-gradient-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style={{width: '80px', height: '80px'}}>
+                    <i className="fas fa-tachometer-alt fa-2x"></i>
+                  </div>
+                  <div className="badge bg-warning text-dark mb-2">
+                    <i className="fas fa-crown me-1"></i>Enterprise Exclusive
+                  </div>
+                  <h5 className="card-title">DNS Performance Monitoring</h5>
+                  <ul className="list-unstyled text-start text-muted small">
+                    <li><i className="fas fa-check text-success me-2"></i>Client-side performance statistics</li>
+                    <li><i className="fas fa-check text-success me-2"></i>DNS timing breakdown (lookup, TLS, transfer)</li>
+                    <li><i className="fas fa-check text-success me-2"></i>Jitter detection and baseline tracking</li>
+                    <li><i className="fas fa-check text-success me-2"></i>Automated performance alerts</li>
+                    <li><i className="fas fa-check text-success me-2"></i>Centralized performance dashboards</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Management & Configuration */}
+            <div className="col-lg-4 col-md-6">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center p-4">
+                  <div className="feature-icon bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style={{width: '80px', height: '80px'}}>
+                    <i className="fas fa-cogs fa-2x"></i>
+                  </div>
+                  <h5 className="card-title">Management & Configuration</h5>
+                  <ul className="list-unstyled text-start text-muted small">
+                    <li><i className="fas fa-crown text-warning me-1"></i> <i className="fas fa-check text-success me-2"></i>Client configuration management</li>
+                    <li><i className="fas fa-check text-success me-2"></i>Web-based management console</li>
+                    <li><i className="fas fa-check text-success me-2"></i>REST API for automation</li>
+                    <li><i className="fas fa-check text-success me-2"></i>Role-based access control</li>
+                    <li><i className="fas fa-check text-success me-2"></i>System tray health monitoring</li>
                   </ul>
                 </div>
               </div>
@@ -357,6 +398,7 @@ export default function Features() {
                 <div className="row">
                   <div className="col-md-6">
                     <ul className="list-unstyled">
+                      <li><i className="fas fa-crown text-warning me-1"></i> <i className="fas fa-check text-success me-2"></i>DNS Performance Monitoring</li>
                       <li><i className="fas fa-check text-success me-2"></i>Prometheus Metrics</li>
                       <li><i className="fas fa-check text-success me-2"></i>Grafana Dashboards</li>
                       <li><i className="fas fa-check text-success me-2"></i>SNMP Support</li>
@@ -364,12 +406,112 @@ export default function Features() {
                   </div>
                   <div className="col-md-6">
                     <ul className="list-unstyled">
+                      <li><i className="fas fa-crown text-warning me-1"></i> <i className="fas fa-check text-success me-2"></i>WHOIS Lookup Service</li>
                       <li><i className="fas fa-check text-success me-2"></i>Syslog Integration</li>
                       <li><i className="fas fa-check text-success me-2"></i>Health Check APIs</li>
                       <li><i className="fas fa-check text-success me-2"></i>Performance Analytics</li>
                     </ul>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enterprise Analytics & Intelligence */}
+      <section className="py-5 bg-light">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-12 mb-5 text-center">
+              <div className="badge bg-warning text-dark fs-6 px-3 py-2 mb-3">
+                <i className="fas fa-crown me-2"></i>Enterprise Edition Exclusive
+              </div>
+              <h2 className="fw-bold mb-4">Advanced Analytics & Intelligence</h2>
+              <p className="lead text-muted">Enterprise-exclusive features for comprehensive DNS analytics and threat intelligence</p>
+            </div>
+          </div>
+          
+          <div className="row g-4">
+            <div className="col-lg-6">
+              <div className="feature-deep-dive p-4 bg-white rounded shadow-sm h-100">
+                <div className="d-flex align-items-start mb-3">
+                  <div className="feature-icon bg-primary text-white rounded p-3 me-3">
+                    <i className="fas fa-tachometer-alt fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 className="fw-bold">DNS Performance Monitoring</h4>
+                    <p className="text-muted mb-0">Real-time performance analytics with detailed timing breakdown</p>
+                  </div>
+                </div>
+                <ul className="list-unstyled">
+                  <li className="mb-2"><i className="fas fa-stopwatch text-success me-2"></i><strong>DNS Lookup Timing:</strong> Track DNS resolution performance from client perspective</li>
+                  <li className="mb-2"><i className="fas fa-handshake text-success me-2"></i><strong>Connection Analysis:</strong> TCP connection and TLS handshake timing metrics</li>
+                  <li className="mb-2"><i className="fas fa-chart-bar text-success me-2"></i><strong>Baseline Tracking:</strong> Establish performance baselines and detect anomalies</li>
+                  <li className="mb-2"><i className="fas fa-bell text-success me-2"></i><strong>Smart Alerts:</strong> Automated performance threshold monitoring</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="col-lg-6">
+              <div className="feature-deep-dive p-4 bg-white rounded shadow-sm h-100">
+                <div className="d-flex align-items-start mb-3">
+                  <div className="feature-icon bg-info text-white rounded p-3 me-3">
+                    <i className="fas fa-search fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 className="fw-bold">WHOIS Intelligence Service</h4>
+                    <p className="text-muted mb-0">Real-time WHOIS lookups with caching and search capabilities</p>
+                  </div>
+                </div>
+                <ul className="list-unstyled">
+                  <li className="mb-2"><i className="fas fa-globe text-success me-2"></i><strong>Domain Intelligence:</strong> Instant WHOIS lookups for domains and IP addresses</li>
+                  <li className="mb-2"><i className="fas fa-database text-success me-2"></i><strong>Smart Caching:</strong> Cached results with automatic refresh and cleanup</li>
+                  <li className="mb-2"><i className="fas fa-search text-success me-2"></i><strong>Advanced Search:</strong> Search by registrar, organization, or nameserver</li>
+                  <li className="mb-2"><i className="fas fa-chart-line text-success me-2"></i><strong>Usage Analytics:</strong> Track WHOIS lookup patterns and statistics</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div className="row g-4 mt-2">
+            <div className="col-lg-6">
+              <div className="feature-deep-dive p-4 bg-white rounded shadow-sm h-100">
+                <div className="d-flex align-items-start mb-3">
+                  <div className="feature-icon bg-danger text-white rounded p-3 me-3">
+                    <i className="fas fa-shield-virus fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 className="fw-bold">IOC Threat Intelligence</h4>
+                    <p className="text-muted mb-0">Multiple threat intelligence feeds with custom overrides</p>
+                  </div>
+                </div>
+                <ul className="list-unstyled">
+                  <li className="mb-2"><i className="fas fa-rss text-success me-2"></i><strong>Multiple Feeds:</strong> 5+ default threat intelligence feeds with custom feed support</li>
+                  <li className="mb-2"><i className="fas fa-cog text-success me-2"></i><strong>Smart Overrides:</strong> Custom allow/block rules with expiration times</li>
+                  <li className="mb-2"><i className="fas fa-sync text-success me-2"></i><strong>Auto Updates:</strong> Automatic feed updates with configurable intervals</li>
+                  <li className="mb-2"><i className="fas fa-chart-pie text-success me-2"></i><strong>IOC Analytics:</strong> Comprehensive statistics and blocking reports</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="col-lg-6">
+              <div className="feature-deep-dive p-4 bg-white rounded shadow-sm h-100">
+                <div className="d-flex align-items-start mb-3">
+                  <div className="feature-icon bg-success text-white rounded p-3 me-3">
+                    <i className="fas fa-sliders-h fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 className="fw-bold">Client Configuration Management</h4>
+                    <p className="text-muted mb-0">Centralized client configuration with JWT-based deployment</p>
+                  </div>
+                </div>
+                <ul className="list-unstyled">
+                  <li className="mb-2"><i className="fas fa-key text-success me-2"></i><strong>JWT Authentication:</strong> Secure domain-based client configuration</li>
+                  <li className="mb-2"><i className="fas fa-users text-success me-2"></i><strong>Role Management:</strong> Client-Reader, Client-Maintainer, Domain-Admin roles</li>
+                  <li className="mb-2"><i className="fas fa-history text-success me-2"></i><strong>Version Control:</strong> Configuration versioning with rollback capabilities</li>
+                  <li className="mb-2"><i className="fas fa-monitor text-success me-2"></i><strong>Client Monitoring:</strong> Track client status and configuration pulls</li>
+                </ul>
               </div>
             </div>
           </div>

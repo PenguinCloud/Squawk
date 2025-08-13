@@ -12,7 +12,7 @@ export default function Home() {
               <div className="hero-content">
                 <div className="mb-3">
                   <span className="badge bg-light text-primary fs-6 px-3 py-2">
-                    <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Cloud Solution
+                    <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Technologies Solution
                   </span>
                 </div>
                 <h1 className="display-4 fw-bold mb-4">
@@ -76,14 +76,18 @@ export default function Home() {
                   <div className="card-body">
                     <pre className="mb-0"><code className="language-bash">{`# Quick Start with Docker
 docker run -p 53:53/udp -p 53:53/tcp \\
-  -e SQUAWK_SERVER_URL=https://dns.yourdomain.com:8443 \\
+  -e SQUAWK_SERVER_URL=https://dns.squawkdns.com:8443 \\
   -e SQUAWK_AUTH_TOKEN=your-secure-token \\
   penguincloud/squawk-dns-client:latest forward -v
 
-# Or install natively  
-wget https://github.com/penguincloud/squawk/releases/download/v1.1.1-client/squawk-dns-client_1.1.1_amd64.deb
-sudo dpkg -i squawk-dns-client_1.1.1_amd64.deb
-sudo systemctl enable --now squawk-dns-client`}</code></pre>
+# Go Client (Enterprise Users)
+wget https://github.com/PenguinCloud/Squawk/releases/latest/download/squawk-linux-amd64
+chmod +x squawk-linux-amd64
+./squawk-linux-amd64 resolve example.com
+
+# Python Client (System Tray)
+wget https://github.com/PenguinCloud/Squawk/releases/download/v2.0.0/squawk-dns-client_2.0.0_amd64.deb
+sudo dpkg -i squawk-dns-client_2.0.0_amd64.deb`}</code></pre>
                   </div>
                 </div>
               </div>
@@ -98,7 +102,7 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
           <div className="row">
             <div className="col-lg-12 text-center mb-5">
               <h2 className="fw-bold">Choose Your Edition</h2>
-              <p className="text-muted">Community Open Source or Premium Licensed - both with enterprise-grade security</p>
+              <p className="text-muted">Community Open Source or Enterprise Licensed - both with enterprise-grade security</p>
             </div>
           </div>
           
@@ -134,12 +138,12 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
                   <span className="badge bg-warning text-dark fs-6 px-3 py-2">Most Popular</span>
                 </div>
                 <div className="card-header bg-primary text-white text-center">
-                  <h4 className="mb-0"><i className="fas fa-crown me-2"></i>Premium Edition</h4>
+                  <h4 className="mb-0"><i className="fas fa-crown me-2"></i>Enterprise Edition</h4>
                   <p className="mb-0 mt-2"><small>Licensed with Professional Support</small></p>
                 </div>
                 <div className="card-body p-4">
                   <div className="mb-3 p-3 bg-primary bg-opacity-10 rounded">
-                    <h6 className="text-primary mb-2"><i className="fas fa-star me-2"></i>Key Premium Benefit:</h6>
+                    <h6 className="text-primary mb-2"><i className="fas fa-star me-2"></i>Key Enterprise Benefit:</h6>
                     <p className="mb-0 fw-bold">
                       <strong>Selective DNS Routing</strong> - One secure endpoint that provides private AND public DNS 
                       entries based on user/group permissions. Internal users get corporate DNS + public internet, 
@@ -158,7 +162,7 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
                   </ul>
                   <div className="text-center mt-4">
                     <Link href="/pricing" className="btn btn-primary btn-lg">
-                      <i className="fas fa-rocket me-2"></i>Start Premium
+                      <i className="fas fa-rocket me-2"></i>Start Enterprise
                     </Link>
                   </div>
                 </div>
@@ -256,7 +260,7 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
               <div className="pe-lg-5">
                 <div className="mb-3">
                   <span className="badge bg-primary fs-6 px-3 py-2">
-                    <i className="fas fa-crown me-2"></i>Premium Feature
+                    <i className="fas fa-crown me-2"></i>Enterprise Feature
                   </span>
                 </div>
                 <h2 className="fw-bold mb-4">
@@ -313,7 +317,7 @@ sudo systemctl enable --now squawk-dns-client`}</code></pre>
                   </Link>
                   <Link href="/pricing" className="btn btn-outline-primary btn-lg">
                     <i className="fas fa-rocket me-2"></i>
-                    Get Premium
+                    Get Enterprise
                   </Link>
                 </div>
               </div>
@@ -405,7 +409,7 @@ Domain not found (Private entries hidden)`}</code></pre>
                 </Link>
                 <Link href="/pricing" className="btn btn-outline-primary btn-lg me-3">
                   <i className="fas fa-dollar-sign me-2"></i>
-                  View Premium Plans
+                  View Enterprise Plans
                 </Link>
                 <Link href="/contact" className="btn btn-outline-secondary btn-lg">
                   <i className="fas fa-envelope me-2"></i>

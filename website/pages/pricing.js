@@ -11,7 +11,7 @@ export default function Pricing() {
             <div className="col-lg-12 text-center">
               <div className="mb-3">
                 <span className="badge bg-light text-primary fs-6 px-3 py-2">
-                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Cloud Solution
+                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Technologies Solution
                 </span>
               </div>
               <h1 className="display-4 fw-bold mb-4">Simple, Transparent Pricing</h1>
@@ -53,7 +53,7 @@ export default function Pricing() {
               </div>
             </div>
 
-            {/* Premium Plan */}
+            {/* Enterprise Plan */}
             <div className="col-lg-4 col-md-6">
               <div className="card h-100 border-primary border-3 shadow-lg position-relative">
                 <div className="position-absolute top-0 start-50 translate-middle">
@@ -63,7 +63,7 @@ export default function Pricing() {
                   <div className="pricing-icon bg-primary text-white rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" style={{width: '80px', height: '80px'}}>
                     <i className="fas fa-crown fa-2x"></i>
                   </div>
-                  <h3 className="card-title mb-3">Premium Edition</h3>
+                  <h3 className="card-title mb-3">Enterprise Edition</h3>
                   <div className="price-display mb-4">
                     <h2 className="display-4 fw-bold text-primary">$5</h2>
                     <p className="text-muted">per user/month</p>
@@ -86,7 +86,7 @@ export default function Pricing() {
                     <li className="mb-2"><i className="fas fa-crown text-primary me-2"></i>Professional support & SLA</li>
                   </ul>
                   <a href="mailto:sales@penguincloud.io" className="btn btn-primary btn-lg w-100">
-                    <i className="fas fa-rocket me-2"></i>Start Premium
+                    <i className="fas fa-rocket me-2"></i>Start Enterprise
                   </a>
                 </div>
               </div>
@@ -143,7 +143,7 @@ export default function Pricing() {
                   </h2>
                   <div id="faq1" className="accordion-collapse collapse show" data-bs-parent="#pricingFAQ">
                     <div className="accordion-body">
-                      Community Edition is free and open source with basic DNS resolution, single-token auth, and standard features. Premium Edition adds <strong>selective DNS routing</strong> (serve private + public DNS from one endpoint based on user permissions), per-user token management, advanced analytics, priority resolution, and professional support.
+                      Community Edition is free and open source with basic DNS resolution, single-token auth, and standard features. Enterprise Edition adds <strong>selective DNS routing</strong> (serve private + public DNS from one endpoint based on user permissions), per-user token management, advanced analytics, priority resolution, and professional support.
                     </div>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export default function Pricing() {
                 <div className="accordion-item">
                   <h2 className="accordion-header">
                     <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                      Can I upgrade from Community to Premium later?
+                      Can I upgrade from Community to Enterprise later?
                     </button>
                   </h2>
                   <div id="faq4" className="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
@@ -217,7 +217,7 @@ export default function Pricing() {
                   <i className="fab fa-github me-2"></i>Try Community Edition Free
                 </Link>
                 <a href="mailto:sales@penguincloud.io" className="btn btn-outline-light btn-lg">
-                  <i className="fas fa-crown me-2"></i>Get Premium License
+                  <i className="fas fa-crown me-2"></i>Get Enterprise License
                 </a>
                 <Link href="/documentation/" className="btn btn-outline-light btn-lg">
                   <i className="fas fa-book me-2"></i>View Documentation

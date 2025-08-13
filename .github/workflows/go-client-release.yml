@@ -215,7 +215,7 @@ jobs:
           Section: net
           Priority: optional
           Architecture: amd64
-          Maintainer: PenguinCloud <support@penguintech.group>
+          Maintainer: Penguin Technologies <support@penguintech.group>
           Description: Squawk DNS-over-HTTPS client
            A high-performance DNS-over-HTTPS client with mTLS support and local DNS forwarding.
            Provides secure DNS resolution using HTTPS protocol with mutual TLS authentication.
@@ -248,7 +248,7 @@ jobs:
           Source: https://github.com/penguincloud/squawk
           
           Files: *
-          Copyright: 2024 PenguinCloud
+          Copyright: 2024 Penguin Technologies
           License: MIT
           EOF
           
@@ -278,7 +278,7 @@ jobs:
           Section: net
           Priority: optional
           Architecture: arm64
-          Maintainer: PenguinCloud <support@penguintech.group>
+          Maintainer: Penguin Technologies <support@penguintech.group>
           Description: Squawk DNS-over-HTTPS client
            A high-performance DNS-over-HTTPS client with mTLS support and local DNS forwarding.
            Provides secure DNS resolution using HTTPS protocol with mutual TLS authentication.
@@ -311,7 +311,7 @@ jobs:
           Source: https://github.com/penguincloud/squawk
           
           Files: *
-          Copyright: 2024 PenguinCloud
+          Copyright: 2024 Penguin Technologies
           License: MIT
           EOF
           

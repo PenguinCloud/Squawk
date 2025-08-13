@@ -11,7 +11,7 @@ export default function Documentation() {
             <div className="col-lg-12 text-center">
               <div className="mb-3">
                 <span className="badge bg-light text-primary fs-6 px-3 py-2">
-                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Cloud Solution
+                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Technologies Solution
                 </span>
               </div>
               <h1 className="display-4 fw-bold mb-4">Documentation</h1>
@@ -265,21 +265,22 @@ export default function Documentation() {
             <div className="col-lg-6">
               <div className="code-example p-4 bg-dark text-light rounded">
                 <h5 className="text-warning mb-3">
-                  <i className="fab fa-docker me-2"></i>Docker Quick Start
+                  <i className="fab fa-docker me-2"></i>Docker Compose (Local Testing)
                 </h5>
                 <pre className="mb-0"><code>
-# Start Squawk DNS Server
-docker run -d \
-  -p 8080:8080 \
-  -e AUTH_TOKEN=your-secure-token \
-  penguincloud/squawk-dns-server:latest
+# Complete local testing environment
+git clone https://github.com/PenguinCloud/Squawk.git
+cd Squawk
 
-# Start Squawk DNS Client
-docker run -d \
-  -p 53:53/udp -p 53:53/tcp \
-  -e SQUAWK_SERVER_URL=https://localhost:8080 \
-  -e SQUAWK_AUTH_TOKEN=your-secure-token \
-  penguincloud/squawk-dns-client:latest forward -v
+# Set environment variables
+export AUTH_TOKEN=your-secure-token
+export POSTGRES_PASSWORD=secure-password
+
+# Start full stack (DNS server + client + cache)
+docker-compose up -d
+
+# Or start with PostgreSQL and monitoring
+docker-compose --profile postgres --profile monitoring up -d
                 </code></pre>
               </div>
             </div>

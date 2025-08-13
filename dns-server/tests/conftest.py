@@ -1,18 +1,32 @@
 """
 Test configuration and fixtures for DNS server tests
+Enhanced for new feature testing
 """
 import pytest
+import asyncio
 import tempfile
 import os
 import sys
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, AsyncMock
 from pydal import DAL, Field
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Add web/apps directory to Python path for importing dns_console
 web_apps_path = os.path.join(os.path.dirname(__file__), '..', 'web', 'apps')
 if web_apps_path not in sys.path:
     sys.path.insert(0, web_apps_path)
+
+# Add bins directory to Python path for importing feature modules
+bins_path = os.path.join(os.path.dirname(__file__), '..', 'bins')
+if bins_path not in sys.path:
+    sys.path.insert(0, bins_path)
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for the test session."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 @pytest.fixture
 def temp_db():
@@ -166,3 +180,58 @@ def valid_domains():
         "localhost",
         "*.example.com",  # Wildcard
     ]
+
+# Additional fixtures for new features
+@pytest.fixture
+def mock_whois_response():
+    """Mock WHOIS response data"""
+    return {
+        'domain_name': 'example.com',
+        'registrar': 'Example Registrar Inc.',
+        'creation_date': '2000-01-01T00:00:00',
+        'expiration_date': '2025-01-01T00:00:00',
+        'nameservers': ['ns1.example.com', 'ns2.example.com'],
+        'organization': 'Example Organization',
+        'status': ['clientTransferProhibited'],
+        'emails': ['admin@example.com'],
+        'query_type': 'domain',
+        'timestamp': datetime.now().isoformat(),
+        'source': 'test'
+    }
+
+@pytest.fixture
+def mock_ioc_feeds():
+    """Mock IOC feed data"""
+    return [
+        {
+            'name': 'Test Malware Domains',
+            'url': 'https://test.example.com/malware_domains.txt',
+            'feed_type': 'domain',
+            'format': 'txt',
+            'enabled': True,
+            'content': 'malware.example.com\nphishing.test.com\nbad-domain.org\n'
+        }
+    ]
+
+@pytest.fixture
+def mock_client_config():
+    """Mock client configuration data"""
+    return {
+        'server_url': 'https://dns.example.com:8443',
+        'dns_port': 53,
+        'cache_enabled': True,
+        'cache_ttl': 300,
+        'auth_token': 'test_token_123',
+        'use_mtls': True,
+        'cert_path': '/etc/squawk/client.crt',
+        'key_path': '/etc/squawk/client.key',
+        'ca_cert_path': '/etc/squawk/ca.crt',
+        'log_level': 'INFO',
+        'timeout': 5,
+        'retries': 3
+    }
+
+@pytest.fixture
+def test_jwt_secret():
+    """Test JWT secret"""
+    return "test_jwt_secret_key_for_unit_tests_only"

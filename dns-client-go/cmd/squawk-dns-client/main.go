@@ -15,6 +15,8 @@ import (
 	"github.com/penguincloud/squawk/dns-client-go/pkg/config"
 	"github.com/penguincloud/squawk/dns-client-go/pkg/forwarder"
 	"github.com/penguincloud/squawk/dns-client-go/pkg/license"
+	"github.com/penguincloud/squawk/dns-client-go/pkg/logger"
+	"github.com/penguincloud/squawk/dns-client-go/pkg/performance"
 	"github.com/spf13/cobra"
 )
 
@@ -33,6 +35,7 @@ var (
 	tcpForward  bool
 	verbose     bool
 	jsonOutput  bool
+	enablePerformanceMonitoring bool
 
 	// Version information
 	version   = "1.0.0"
@@ -79,6 +82,9 @@ func init() {
 	// DNS forwarding flags
 	rootCmd.Flags().BoolVarP(&udpForward, "udp", "u", false, "Enable UDP DNS forwarding on port 53")
 	rootCmd.Flags().BoolVarP(&tcpForward, "tcp", "T", false, "Enable TCP DNS forwarding on port 53")
+	
+	// Performance monitoring flags
+	rootCmd.Flags().BoolVar(&enablePerformanceMonitoring, "performance", false, "Enable DNS performance monitoring (Enterprise feature)")
 
 	// Add subcommands
 	rootCmd.AddCommand(forwardCmd)
@@ -231,6 +237,22 @@ func runForwarder(dohClient *client.DoHClient, cfg *config.AppConfig) {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
+	// Setup performance monitoring if enabled
+	var perfMonitor *performance.DNSPerformanceMonitor
+	if enablePerformanceMonitoring {
+		// Create simple logger
+		log := logger.NewSimpleLogger(verbose)
+		
+		// Initialize performance monitor
+		perfMonitor = performance.NewDNSPerformanceMonitor(&cfg.Client, log)
+		
+		if err := perfMonitor.Start(); err != nil {
+			log.Printf("Failed to start performance monitoring: %v", err)
+		} else if verbose {
+			fmt.Println("✓ DNS performance monitoring enabled")
+		}
+	}
+
 	// Start forwarder in goroutine
 	go func() {
 		if err := fwd.Start(ctx); err != nil {
@@ -240,7 +262,15 @@ func runForwarder(dohClient *client.DoHClient, cfg *config.AppConfig) {
 
 	// Wait for shutdown signal
 	<-sigChan
-	log.Println("Received shutdown signal, stopping forwarder...")
+	log.Println("Received shutdown signal, stopping services...")
+	
+	// Stop performance monitoring first
+	if perfMonitor != nil {
+		if err := perfMonitor.Stop(); err != nil {
+			log.Printf("Error stopping performance monitor: %v", err)
+		}
+	}
+	
 	cancel()
 
 	// Give some time for graceful shutdown

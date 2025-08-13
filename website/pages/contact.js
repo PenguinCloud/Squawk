@@ -11,7 +11,7 @@ export default function Contact() {
             <div className="col-lg-12 text-center">
               <div className="mb-3">
                 <span className="badge bg-light text-primary fs-6 px-3 py-2">
-                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Cloud Solution
+                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Technologies Solution
                 </span>
               </div>
               <h1 className="display-4 fw-bold mb-4">Contact Us</h1>

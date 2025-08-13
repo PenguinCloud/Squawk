@@ -1,6 +1,6 @@
 site_name: Squawk DNS Documentation
 site_description: Comprehensive documentation for Squawk DNS - Secure DNS-over-HTTPS system
-site_author: PenguinCloud
+site_author: Penguin Technologies
 site_url: https://docs.squawkdns.com
 
 docs_dir: 'docs-dir'  # Use docs-dir for docs
@@ -93,4 +93,4 @@ extra:
 extra_css:
   - stylesheets/extra.css
 
-copyright: Copyright &copy; 2025 PenguinCloud. All rights reserved.
+copyright: Copyright &copy; 2025 Penguin Technologies. All rights reserved.
