@@ -244,7 +244,7 @@ func runForwarder(dohClient *client.DoHClient, cfg *config.AppConfig) {
 		log := logger.NewSimpleLogger(verbose)
 		
 		// Initialize performance monitor
-		perfMonitor = performance.NewDNSPerformanceMonitor(&cfg.Client, log)
+		perfMonitor = performance.NewDNSPerformanceMonitor(cfg.Client, log)
 		
 		if err := perfMonitor.Start(); err != nil {
 			log.Printf("Failed to start performance monitoring: %v", err)

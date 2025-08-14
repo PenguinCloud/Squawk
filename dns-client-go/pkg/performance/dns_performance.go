@@ -4,11 +4,11 @@ import (
 	"context"
 	"crypto/sha256"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
-	"net"
 	"net/http"
 	"net/http/httptrace"
 	"net/url"
@@ -17,8 +17,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PenguinCloud/Squawk/dns-client-go/pkg/config"
-	"github.com/PenguinCloud/Squawk/dns-client-go/pkg/logger"
+	"github.com/penguincloud/squawk/dns-client-go/pkg/client"
+	"github.com/penguincloud/squawk/dns-client-go/pkg/logger"
 )
 
 // DNSPerformanceStats represents comprehensive DNS over HTTP performance metrics
@@ -99,7 +99,7 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 
 // DNSPerformanceMonitor handles DNS over HTTP performance monitoring
 type DNSPerformanceMonitor struct {
-	config           *config.ClientConfig
+	config           *client.Config
 	client           *http.Client
 	logger           logger.Logger
 	stopChan         chan struct{}
@@ -120,25 +120,38 @@ type DNSPerformanceMonitor struct {
 }
 
 // NewDNSPerformanceMonitor creates a new performance monitor
-func NewDNSPerformanceMonitor(cfg *config.ClientConfig, log logger.Logger) *DNSPerformanceMonitor {
+func NewDNSPerformanceMonitor(cfg *client.Config, log logger.Logger) *DNSPerformanceMonitor {
 	// Create HTTP client with tracing capabilities
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: cfg.SkipTLSVerify,
-			ClientCAs:          cfg.CACertPool,
+			InsecureSkipVerify: !cfg.VerifySSL,
 		},
 		DisableKeepAlives: false, // Keep connections alive for better performance
 		MaxIdleConns:      10,
 		IdleConnTimeout:   30 * time.Second,
 	}
 	
-	if cfg.ClientCert != nil {
-		transport.TLSClientConfig.Certificates = []tls.Certificate{*cfg.ClientCert}
+	// Load client certificates if provided
+	if cfg.ClientCert != "" && cfg.ClientKey != "" {
+		cert, err := tls.LoadX509KeyPair(cfg.ClientCert, cfg.ClientKey)
+		if err == nil {
+			transport.TLSClientConfig.Certificates = []tls.Certificate{cert}
+		}
+	}
+	
+	// Load CA certificate if provided
+	if cfg.CaCert != "" {
+		caCert, err := os.ReadFile(cfg.CaCert)
+		if err == nil {
+			caCertPool := x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(caCert)
+			transport.TLSClientConfig.RootCAs = caCertPool
+		}
 	}
 	
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   time.Duration(cfg.Timeout) * time.Second,
+		Timeout:   30 * time.Second, // Default timeout
 	}
 	
 	// Default test domains for performance monitoring
