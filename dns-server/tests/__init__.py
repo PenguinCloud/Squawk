@@ -1,1 +1,1 @@
-# DNS Server Tests Package
+# Minimal test package
