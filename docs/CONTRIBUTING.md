@@ -61,7 +61,7 @@ Or visit: https://cla.penguintech.group/squawk
 
 ```bash
 # Clone the repository
-git clone https://github.com/PenguinCloud/Squawk.git
+git clone https://github.com/penguintechinc/squawk.git
 cd Squawk
 
 # Create development branch
@@ -140,7 +140,7 @@ git clone https://github.com/YOUR_USERNAME/Squawk.git
 cd Squawk
 
 # Add upstream remote
-git remote add upstream https://github.com/PenguinCloud/Squawk.git
+git remote add upstream https://github.com/penguintechinc/squawk.git
 ```
 
 ### 2. Create Feature Branch

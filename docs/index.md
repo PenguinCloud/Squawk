@@ -35,7 +35,7 @@ docker run -d \
 
 ```bash
 # Download and install (Linux example)
-wget https://github.com/penguincloud/squawk/releases/download/v1.1.1-client/squawk-dns-client_1.1.1_amd64.deb
+wget https://github.com/penguintechinc/squawk/releases/download/v1.1.1-client/squawk-dns-client_1.1.1_amd64.deb
 sudo dpkg -i squawk-dns-client_1.1.1_amd64.deb
 sudo systemctl enable --now squawk-dns-client
 ```
@@ -96,7 +96,7 @@ graph TB
 
 ## Support & Community
 
-- **GitHub Issues**: [Report bugs and feature requests](https://github.com/penguincloud/squawk/issues)
+- **GitHub Issues**: [Report bugs and feature requests](https://github.com/penguintechinc/squawk/issues)
 - **Documentation**: This comprehensive guide
 - **Enterprise Support**: [Contact PenguinCloud](mailto:sales@penguincloud.io)
 

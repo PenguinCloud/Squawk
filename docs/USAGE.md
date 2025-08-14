@@ -19,7 +19,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/PenguinCloud/Squawk.git
+git clone https://github.com/penguintechinc/squawk.git
 cd Squawk
 
 # Start with web console
@@ -57,7 +57,7 @@ Squawk now uses separated Docker configurations with Ubuntu 22.04 LTS as the bas
 
 ```bash
 # Clone the repository
-git clone https://github.com/PenguinCloud/Squawk.git
+git clone https://github.com/penguintechinc/squawk.git
 cd Squawk
 
 # Start all core services (DNS server, web console, client, cache)

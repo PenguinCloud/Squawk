@@ -600,7 +600,7 @@ Special thanks to:
 
 ## 📞 Support
 
-- **GitHub Issues**: https://github.com/penguincloud/squawk/issues
+- **GitHub Issues**: https://github.com/penguintechinc/squawk/issues
 - **Documentation**: https://docs.squawkdns.com
 - **Email**: support@penguintech.group
 

@@ -81,12 +81,12 @@ docker run -p 53:53/udp -p 53:53/tcp \\
   penguincloud/squawk-dns-client:latest forward -v
 
 # Go Client (Enterprise Users)
-wget https://github.com/PenguinCloud/Squawk/releases/latest/download/squawk-linux-amd64
+wget https://github.com/penguincloud/squawk/releases/latest/download/squawk-linux-amd64
 chmod +x squawk-linux-amd64
 ./squawk-linux-amd64 resolve example.com
 
 # Python Client (System Tray)
-wget https://github.com/PenguinCloud/Squawk/releases/download/v2.0.0/squawk-dns-client_2.0.0_amd64.deb
+wget https://github.com/penguincloud/squawk/releases/download/v2.0.0/squawk-dns-client_2.0.0_amd64.deb
 sudo dpkg -i squawk-dns-client_2.0.0_amd64.deb`}</code></pre>
                   </div>
                 </div>

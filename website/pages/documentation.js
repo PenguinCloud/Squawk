@@ -269,7 +269,7 @@ export default function Documentation() {
                 </h5>
                 <pre className="mb-0"><code>
 # Complete local testing environment
-git clone https://github.com/PenguinCloud/Squawk.git
+git clone https://github.com/penguincloud/squawk.git
 cd Squawk
 
 # Set environment variables

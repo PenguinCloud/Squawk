@@ -39,7 +39,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/PenguinCloud/Squawk.git
+git clone https://github.com/penguintechinc/squawk.git
 cd Squawk
 
 # Build and start all services

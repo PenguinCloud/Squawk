@@ -31,7 +31,7 @@ A high-performance DNS-over-HTTPS client written in Go, providing 1:1 feature pa
 
 ```bash
 # Clone the repository
-git clone https://github.com/penguincloud/squawk.git
+git clone https://github.com/penguintechinc/squawk.git
 cd squawk/dns-client-go
 
 # Install dependencies
@@ -615,5 +615,5 @@ For more information, see the main project documentation.
 ## Resources
 
 - **Documentation**: [docs.squawkdns.com](https://docs.squawkdns.com)
-- **GitHub Issues**: [Report Issues](https://github.com/PenguinCloud/Squawk/issues)
+- **GitHub Issues**: [Report Issues](https://github.com/penguintechinc/squawk/issues)
 - **Main Project**: [Squawk DNS System](../README.md)
