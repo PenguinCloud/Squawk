@@ -266,11 +266,8 @@ func validateConfig(config *AppConfig) error {
 		return fmt.Errorf("license configuration is required")
 	}
 
-	// License is required for premium features (warn but don't fail for backward compatibility)
-	if config.License.LicenseKey == "" && config.License.UserToken == "" {
-		// This will be handled at runtime with appropriate warnings
-		// allowing backward compatibility for users without licenses
-	}
+	// License is optional for backward compatibility
+	// Missing license will be handled at runtime with appropriate warnings
 
 	return nil
 }

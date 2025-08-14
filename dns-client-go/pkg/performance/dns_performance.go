@@ -78,9 +78,9 @@ type Duration struct {
 
 func (d Duration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"nanoseconds":  d.Duration.Nanoseconds(),
-		"milliseconds": float64(d.Duration.Nanoseconds()) / 1e6,
-		"human":        d.Duration.String(),
+		"nanoseconds":  d.Nanoseconds(),
+		"milliseconds": float64(d.Nanoseconds()) / 1e6,
+		"human":        d.String(),
 	})
 }
 
@@ -380,7 +380,7 @@ func (pm *DNSPerformanceMonitor) performDNSOverHTTPTest(domain, queryType string
 		stats.TotalTime = Duration{reqEnd.Sub(reqStart)}
 		return stats
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	
 	// Read response
 	body, err := io.ReadAll(resp.Body)
@@ -554,7 +554,7 @@ func (pm *DNSPerformanceMonitor) uploadStats() {
 		pm.logger.Error("Failed to upload performance stats: %v", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	
 	if resp.StatusCode != 200 {
 		pm.logger.Error("Performance stats upload failed with status: %d", resp.StatusCode)

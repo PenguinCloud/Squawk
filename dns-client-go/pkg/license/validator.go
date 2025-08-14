@@ -31,7 +31,6 @@ type Validator struct {
 	cache          map[string]*cacheEntry
 	cacheMutex     sync.RWMutex
 	lastValidate   time.Time
-	dailyValidated bool
 	validatedToday string // Date string YYYY-MM-DD
 }
 
@@ -138,7 +137,7 @@ func (v *Validator) validateLicenseKey(ctx context.Context) (*ValidationResponse
 			Message: fmt.Sprintf("License server unreachable: %v", err),
 		}, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var validationResp ValidationResponse
 	if err := json.NewDecoder(resp.Body).Decode(&validationResp); err != nil {
@@ -173,7 +172,7 @@ func (v *Validator) validateUserToken(ctx context.Context) (*ValidationResponse,
 			Message: fmt.Sprintf("License server unreachable: %v", err),
 		}, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var validationResp ValidationResponse
 	if err := json.NewDecoder(resp.Body).Decode(&validationResp); err != nil {
