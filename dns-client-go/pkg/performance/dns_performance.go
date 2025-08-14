@@ -124,6 +124,7 @@ func NewDNSPerformanceMonitor(cfg *client.Config, log logger.Logger) *DNSPerform
 	// Create HTTP client with tracing capabilities
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
+			// #nosec G402 - InsecureSkipVerify is controlled by user configuration for self-signed certs
 			InsecureSkipVerify: !cfg.VerifySSL,
 		},
 		DisableKeepAlives: false, // Keep connections alive for better performance
@@ -225,6 +226,7 @@ func (pm *DNSPerformanceMonitor) performanceTestLoop() {
 			
 		case <-ticker.C:
 			// Random interval between 5 and 10 minutes
+			// #nosec G404 - Using math/rand is acceptable for test scheduling (non-security context)
 			nextTest := rand.Intn(5*60) + 5*60 // 5-10 minutes in seconds
 			
 			timer := time.NewTimer(time.Duration(nextTest) * time.Second)
@@ -244,6 +246,7 @@ func (pm *DNSPerformanceMonitor) performanceTestLoop() {
 // runPerformanceTest performs a comprehensive DNS over HTTP performance test
 func (pm *DNSPerformanceMonitor) runPerformanceTest() {
 	// Select random test domain
+	// #nosec G404 - Using math/rand is acceptable for domain selection (non-security context)
 	domain := pm.testDomains[rand.Intn(len(pm.testDomains))]
 	
 	pm.logger.Debug("Running performance test for domain: %s", domain)
