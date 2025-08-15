@@ -23,8 +23,9 @@ ARG VERSION=docker
 ARG BUILD_TIME
 ARG GIT_COMMIT
 
-RUN CGO_ENABLED=0 GOOS=linux go build \
-    -ldflags "-X main.version=${VERSION} -X main.buildTime=${BUILD_TIME} -X main.gitCommit=${GIT_COMMIT}" \
+RUN BUILD_TIME=$(date -u +%Y-%m-%d_%H:%M:%S) && \
+    CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags "-X 'main.version=${VERSION}' -X 'main.buildTime=${BUILD_TIME}' -X 'main.gitCommit=${GIT_COMMIT}'" \
     -o bin/squawk-dns-client \
     ./cmd/squawk-dns-client
 
