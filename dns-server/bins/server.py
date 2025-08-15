@@ -11,6 +11,7 @@ import ssl
 from pydal import DAL, Field
 from pydal.validators import IS_NOT_EMPTY, IS_IN_SET, IS_MATCH
 from datetime import datetime
+import httpx
 
 PORT = 8080
 GOOGLE_DOH_URL = "https://dns.google/dns-query"
@@ -21,10 +22,12 @@ DB_TYPE = None
 DB_URL = None
 ALLOWED_DOMAINS = []
 USE_NEW_AUTH = False  # Flag to use new token management system
+USE_LICENSE_SERVER = False  # Flag to use license server for validation
+LICENSE_SERVER_URL = os.environ.get("LICENSE_SERVER_URL", "https://license.squawkdns.com")
 
 class DNSHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        global AUTH_TOKEN, ALLOWED_DOMAINS, DB_TYPE, DB_URL, USE_NEW_AUTH
+        global AUTH_TOKEN, ALLOWED_DOMAINS, DB_TYPE, DB_URL, USE_NEW_AUTH, USE_LICENSE_SERVER
         
         # Extract token from Authorization header
         token = self.headers.get('Authorization')
@@ -63,7 +66,20 @@ class DNSHandler(http.server.BaseHTTPRequestHandler):
                 return
             
             # Check authorization
-            if USE_NEW_AUTH and DB_TYPE and DB_URL:
+            if USE_LICENSE_SERVER:
+                # Use license server for validation
+                if not self.validate_with_license_server(token):
+                    print(f"License validation failed for token")
+                    self.send_response(403)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    error_response = json.dumps({
+                        "Status": 403,
+                        "Comment": "Invalid or expired license"
+                    })
+                    self.wfile.write(error_response.encode('utf-8'))
+                    return
+            elif USE_NEW_AUTH and DB_TYPE and DB_URL:
                 # Use new token management system
                 if not self.check_token_permission_new(token, name):
                     print(f"Access denied for token to domain: {name}")
@@ -169,6 +185,27 @@ class DNSHandler(http.server.BaseHTTPRequestHandler):
             'SRV', 'CAA', 'DNSKEY', 'DS', 'NAPTR', 'SSHFP', 'TLSA', 'ANY'
         }
         return record_type.upper() in valid_types
+    
+    def validate_with_license_server(self, token):
+        """Validate token with license server"""
+        if not token:
+            return False
+        
+        try:
+            with httpx.Client(timeout=5.0) as client:
+                response = client.post(
+                    f"{LICENSE_SERVER_URL}/api/validate_token",
+                    headers={"Authorization": f"Bearer {token}"}
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("valid", False)
+        except Exception as e:
+            print(f"License server validation error: {e}")
+            # Fail open or closed based on configuration
+            return False  # Fail closed for security
+        
+        return False
     
     def check_token_permission_new(self, token_value, domain_name):
         """Check permission using new token management system"""
@@ -280,13 +317,14 @@ def get_token_from_db(db_type, db_url, domain="*"):
     return (row.token, row.domain.split(',')) if row else (None, [])
 
 def main(argv):
-    global AUTH_TOKEN, PORT, KEY_FILE, CERT_FILE, DB_TYPE, DB_URL, ALLOWED_DOMAINS, USE_NEW_AUTH
+    global AUTH_TOKEN, PORT, KEY_FILE, CERT_FILE, DB_TYPE, DB_URL, ALLOWED_DOMAINS, USE_NEW_AUTH, USE_LICENSE_SERVER
     
     try:
-        opts, args = getopt.getopt(argv, "a:p:k:c:d:u:n", ["auth=", "port=", "key=", "cert=", "dbtype=", "dburl=", "new-auth"])
+        opts, args = getopt.getopt(argv, "a:p:k:c:d:u:nl", ["auth=", "port=", "key=", "cert=", "dbtype=", "dburl=", "new-auth", "license-server"])
     except getopt.GetoptError:
-        print('server.py -a <authtoken> -p <port> -k <keyfile> -c <certfile> -d <dbtype> -u <dburl> [-n|--new-auth]')
+        print('server.py -a <authtoken> -p <port> -k <keyfile> -c <certfile> -d <dbtype> -u <dburl> [-n|--new-auth] [-l|--license-server]')
         print('  -n, --new-auth : Use new token management system with web console')
+        print('  -l, --license-server : Use license server for subscription validation')
         sys.exit(2)
     
     for opt, arg in opts:
@@ -304,9 +342,14 @@ def main(argv):
             DB_URL = arg
         elif opt in ("-n", "--new-auth"):
             USE_NEW_AUTH = True
+        elif opt in ("-l", "--license-server"):
+            USE_LICENSE_SERVER = True
     
+    # If using license server
+    if USE_LICENSE_SERVER:
+        print(f"Using license server for validation at {LICENSE_SERVER_URL}")
     # If using new auth system, ensure database exists
-    if USE_NEW_AUTH:
+    elif USE_NEW_AUTH:
         print("Using new token management system with web console")
         # Set default database if not specified
         if not DB_TYPE:

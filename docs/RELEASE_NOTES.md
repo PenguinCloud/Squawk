@@ -1,10 +1,199 @@
 # Squawk DNS System Release Notes
 
-## v1.1.2 - Maintenance and Security Release
+## v2.1.0 - Enterprise Threat Intelligence and Multi-Tier Release
 
 **Release Date**: August 2025  
-**Release Type**: Patch Release with CI/CD and Security Fixes  
-**Breaking Changes**: None (backward compatible)
+**Release Type**: Major Feature Release with Advanced Threat Intelligence and Enterprise Restructuring  
+**Breaking Changes**: Enterprise licensing model restructured (existing licenses remain valid)
+
+## 🎉 What's New in v2.1.0
+
+This major release introduces comprehensive threat intelligence capabilities and restructures our enterprise offerings to better serve different organizational needs. Key highlights include:
+
+- **🛡️ Complete TAXII/STIX 2.1 Support**: Full integration with enterprise threat intelligence platforms
+- **🔍 OpenIOC Format Support**: Enhanced parsing of industry-standard IOC formats  
+- **💰 New Enterprise Tiers**: Self-Hosted ($5/user) and Cloud-Hosted ($7/user) options
+- **🌐 Advanced Threat Intelligence**: Unlimited feeds for enterprise customers
+- **☁️ Cloud-Hosted Services**: Managed infrastructure with 99.9% SLA
+- **🔧 Enhanced Licensing**: Granular feature control across all tiers
+
+### 🛡️ Advanced Threat Intelligence Integration (NEW)
+
+#### TAXII 2.x / STIX 2.1 Support
+- **TAXII 2.x Client**: Full TAXII 2.x server integration with collection discovery and authentication
+- **STIX 2.1 Parser**: Complete STIX 2.1 bundle parsing with support for indicators, malware, and cyber observables  
+- **Authentication Support**: Bearer token, Basic Auth, and API key authentication for TAXII servers
+- **Incremental Updates**: Support for `added_after` timestamp filtering for efficient updates
+- **SSL Configuration**: Configurable SSL verification for internal or testing TAXII servers
+- **Multi-Object Parsing**: Extracts indicators from STIX Indicators, Malware descriptions, and Cyber Observable Objects
+
+#### OpenIOC Format Support  
+- **Enhanced OpenIOC Parser**: Complete IOC XML parsing with network indicator extraction
+- **Context Awareness**: Extracts IOC metadata including names, descriptions, and context types
+- **Network Indicator Focus**: Prioritizes DNS/domain and IP indicators relevant to DNS blocking
+- **URL Extraction**: Automatically extracts domains from URL indicators in OpenIOC files
+- **IP Range Support**: Handles CIDR notation and IP ranges in OpenIOC indicators
+- **Metadata Preservation**: Maintains OpenIOC context and attribution information
+
+#### Community Threat Intelligence Feeds (FREE)
+- **1 Feed Limit**: Community users get access to one configurable threat intelligence feed
+- **Popular Feed Templates**: Pre-configured templates for STIX, TAXII, and OpenIOC feeds
+- **Format Support**: TXT, CSV, JSON, XML, STIX 2.1, OpenIOC, YARA, and Snort rule parsing
+- **Automatic Updates**: Configurable update intervals (1-24 hours) with automatic feed refresh
+- **Real-time Blocking**: Immediate DNS blocking of indicators from threat intelligence feeds
+
+#### Enterprise Self-Hosted ($5/user/month)
+- **Unlimited Feeds**: No limits on number of threat intelligence sources
+- **Admin Configuration Interface**: Web-based threat feed management and configuration
+- **Advanced Parsing**: Support for complex STIX relationships and advanced OpenIOC contexts
+- **Priority Processing**: Enterprise feeds get processing priority and faster update cycles
+- **Self-Managed Infrastructure**: Customer controls deployment and updates
+
+#### Enterprise Cloud-Hosted ($7/user/month)
+- **All Self-Hosted Features**: Complete enterprise feature set
+- **Managed Infrastructure**: Penguin Technologies operates and maintains servers
+- **Custom Feed Development**: Support for proprietary and custom threat intelligence formats
+- **Advanced Threat Intelligence Curation**: Enhanced and curated threat feeds
+- **99.9% SLA**: Guaranteed uptime with redundant infrastructure
+- **Global CDN**: Edge locations for optimal performance
+
+### 🔧 Technical Implementation Details
+
+#### TAXII 2.x Client Architecture
+- **Discovery Protocol**: Automatic API root and collection discovery
+- **Robust Authentication**: Support for multiple auth methods with fallback mechanisms
+- **Incremental Synchronization**: Efficient updates using timestamps to reduce bandwidth
+- **Error Handling**: Comprehensive retry logic with exponential backoff
+- **SSL/TLS Flexibility**: Configurable certificate validation for enterprise environments
+
+#### Enhanced IOC Processing Engine
+- **Multi-Format Parser**: Unified parsing engine supporting 8+ threat intelligence formats
+- **Confidence Scoring**: Intelligent confidence mapping from various feed formats
+- **Contextual Extraction**: Preserves threat attribution and contextual information
+- **Performance Optimization**: In-memory caching with database persistence
+- **Real-time Integration**: Immediate DNS blocking without service restart
+
+#### Database Schema Enhancements
+```sql
+-- New threat intelligence tables
+ioc_feeds          -- Feed configurations and metadata
+ioc_entries        -- Individual threat indicators
+ioc_overrides      -- User/token specific overrides
+ioc_stats          -- Performance and usage statistics
+```
+
+#### Environment Variables for Threat Intelligence
+```bash
+# Community Threat Intelligence (1 feed limit)
+ENABLE_THREAT_INTEL=true
+THREAT_FEED_UPDATE_HOURS=6
+MAX_COMMUNITY_FEEDS=1
+
+# Enterprise Threat Intelligence (unlimited)
+ENABLE_ENTERPRISE_THREAT_INTEL=true
+MAX_ENTERPRISE_FEEDS=unlimited
+THREAT_INTEL_PRIORITY_PROCESSING=true
+
+# TAXII Configuration
+TAXII_SERVER_URL=https://taxii-server.com/taxii2/
+TAXII_COLLECTION_ID=indicators
+TAXII_AUTH_TYPE=bearer
+TAXII_TOKEN=your-token-here
+TAXII_VERIFY_SSL=true
+
+# OpenIOC Configuration  
+OPENIOC_EXTRACT_NETWORK=true
+OPENIOC_EXTRACT_FILE=false
+OPENIOC_CONFIDENCE_DEFAULT=75
+```
+
+### 💰 New Enterprise Pricing Structure
+
+Squawk DNS now offers three distinct tiers to meet different organizational needs:
+
+#### Community Edition (Free)
+**Perfect for individual users and small teams**
+- ✅ Basic DNS resolution and caching
+- ✅ Standard DNS-over-HTTPS support
+- ✅ mTLS authentication
+- ✅ 1 threat intelligence feed
+- ✅ Basic web console
+- ✅ Community support via GitHub
+
+#### Enterprise Self-Hosted ($5/user/month)
+**Ideal for organizations wanting control over their infrastructure**
+- ✅ **All Community Features**
+- ✅ **Unlimited threat intelligence feeds** with advanced parsers
+- ✅ **Selective DNS routing** with per-user/group access control
+- ✅ **Advanced token management** and user authentication
+- ✅ **Multi-tenant architecture** with organizational isolation
+- ✅ **SAML/LDAP/SSO integration** for enterprise identity providers
+- ✅ **Priority DNS processing** for faster response times
+- ✅ **Enhanced caching** with advanced optimization
+- ✅ **Technical support** with SLA guarantees
+- ✅ **Self-managed** - customer controls infrastructure and updates
+
+#### Enterprise Cloud-Hosted ($7/user/month)
+**Complete managed solution with enterprise-grade reliability**
+- ✅ **All Self-Hosted Features**
+- ✅ **Managed infrastructure** operated by Penguin Technologies
+- ✅ **99.9% SLA** with redundant, fault-tolerant infrastructure
+- ✅ **Automatic updates** with zero-downtime deployments
+- ✅ **24/7 monitoring** with proactive alerting and incident response
+- ✅ **Compliance reporting** for SOC2, HIPAA, GDPR requirements  
+- ✅ **Global CDN** with edge locations for optimal worldwide performance
+- ✅ **Advanced threat intelligence curation** with enhanced feed quality
+- ✅ **Custom integrations** and dedicated development resources
+- ✅ **24/7 dedicated support** with guaranteed response times
+- ✅ **Priority processing** - highest priority across all users
+
+### 🎯 Choosing the Right Tier
+
+| Use Case | Recommended Tier | Why |
+|----------|------------------|-----|
+| Individual/Home | Community | Free, basic features sufficient |
+| Small Business | Self-Hosted | Cost-effective, full enterprise features |
+| Mid-size Company | Self-Hosted | Control infrastructure, reduced costs |
+| Enterprise Corp | Cloud-Hosted | Managed service, SLA, compliance |
+| Regulated Industry | Cloud-Hosted | Compliance reporting, audit trails |
+| Global Organization | Cloud-Hosted | Multi-region, CDN performance |
+
+### 🔄 Migration Guide for v2.1.0
+
+#### From v1.x to v2.1.0
+
+**Existing Enterprise Customers**
+- ✅ **No Action Required**: Existing enterprise licenses automatically map to appropriate tier
+- ✅ **Feature Continuity**: All current features remain available
+- ✅ **Automatic Detection**: System automatically detects and applies correct licensing tier
+- 📧 **Contact Sales**: For cloud-hosted migration assistance
+
+**Community Users**
+- ✅ **Seamless Upgrade**: All existing functionality preserved
+- 🆕 **New Threat Intel**: Can now configure 1 threat intelligence feed
+- 📈 **Upgrade Path**: Clear options to Enterprise Self-Hosted or Cloud-Hosted
+
+**New Installations**
+- 🆕 **Enhanced Setup**: New licensing options during initial configuration
+- 📚 **Improved Documentation**: Updated guides for all three tiers
+- 🎯 **Tier Selection**: Built-in recommendations based on organization size and needs
+
+#### License Mapping from v1.x
+
+| v1.x License | v2.1.0 Tier | Features | Action Required |
+|-------------|-------------|----------|-----------------|
+| Community | Community | Same + 1 threat feed | None |
+| Enterprise | Self-Hosted | All features + unlimited threat intel | None |
+| Custom/Enterprise+ | Cloud-Hosted | Managed service + SLA | Contact sales for migration |
+
+#### Database Schema Updates
+
+v2.1.0 includes automatic database migrations for:
+- New threat intelligence tables (`ioc_feeds`, `ioc_entries`, `ioc_overrides`, `ioc_stats`)
+- Enhanced licensing metadata
+- Backward-compatible schema changes
+
+**No manual database intervention required** - migrations run automatically on first startup.
 
 ### 🛠️ Build System & CI/CD Improvements
 
@@ -411,7 +600,7 @@ Special thanks to:
 
 ## 📞 Support
 
-- **GitHub Issues**: https://github.com/penguincloud/squawk/issues
+- **GitHub Issues**: https://github.com/penguintechinc/squawk/issues
 - **Documentation**: https://docs.squawkdns.com
 - **Email**: support@penguintech.group
 
@@ -421,6 +610,65 @@ GNU AGPL v3 - See LICENSE.md for details
 
 ---
 
-**Upgrade Recommendation**: This is a major release with significant security and performance improvements. All users are encouraged to upgrade to v1.1.1 for enhanced security and functionality.
+## 🚀 v2.1.0 Release Impact
 
-**Note**: This is an alpha release. While feature-complete, additional testing in production environments is recommended before full deployment.
+**Squawk DNS v2.1.0 represents the most significant release in the project's history**, transforming from a simple DNS proxy into a comprehensive enterprise security platform with advanced threat intelligence capabilities.
+
+### 📊 Release Metrics
+
+| Metric | Value | Significance |
+|--------|-------|-------------|
+| **New Features** | 15+ major features | Largest feature release |
+| **Code Addition** | 3,000+ lines | Substantial capability expansion |
+| **Enterprise Tiers** | 3 distinct tiers | Clear upgrade path |
+| **Threat Intelligence** | 8+ feed formats | Industry-leading support |
+| **Database Schema** | 4 new tables | Enhanced data architecture |
+| **Documentation** | 2,000+ new lines | Comprehensive coverage |
+
+### 🎯 Strategic Positioning
+
+**For Community Users**: 
+- Significant value addition with threat intelligence
+- Clear upgrade incentives to enterprise tiers
+- Enhanced security posture at no cost
+
+**For Enterprise Self-Hosted**:
+- Cost-effective enterprise solution
+- Complete feature parity with unlimited capabilities  
+- Maintains infrastructure control
+
+**For Enterprise Cloud-Hosted**:
+- Premium managed service experience
+- Enterprise-grade SLA and support
+- Global performance optimization
+
+### 🔮 Future Roadmap Enablement
+
+v2.1.0 establishes the foundation for:
+- **AI-Powered Threat Detection**: Machine learning integration ready
+- **Zero Trust Architecture**: Identity-based security framework
+- **Global Threat Intelligence**: Community-driven threat sharing
+- **Advanced Analytics**: Comprehensive security insights
+- **Mobile Management**: iOS/Android management apps
+
+### ⚡ Immediate Benefits
+
+**Security Enhancement**: Advanced threat intelligence blocking provides immediate protection against known threats
+
+**Performance Optimization**: Enterprise tiers deliver faster DNS resolution with priority processing
+
+**Operational Efficiency**: Cloud-hosted tier eliminates infrastructure management overhead
+
+**Compliance Readiness**: Built-in compliance reporting for regulated industries
+
+**Scalability**: Multi-tier architecture supports organizations from individual users to global enterprises
+
+---
+
+**Upgrade Recommendation**: This is a transformational release that significantly enhances security, performance, and enterprise capabilities. All users are strongly encouraged to upgrade to v2.1.0.
+
+- **Community Users**: Immediate upgrade recommended for threat intelligence features
+- **Enterprise Users**: Contact sales for tier optimization and potential cost savings
+- **New Deployments**: Start with v2.1.0 for latest capabilities and architecture
+
+**Production Readiness**: While this is a major release, all new features are built on proven foundations with comprehensive testing. Phased rollouts recommended for large enterprise deployments.

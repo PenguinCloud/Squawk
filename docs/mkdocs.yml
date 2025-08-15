@@ -1,12 +1,12 @@
 site_name: Squawk DNS Documentation
 site_description: Comprehensive documentation for Squawk DNS - Secure DNS-over-HTTPS system
-site_author: PenguinCloud
+site_author: Penguin Technologies
 site_url: https://docs.squawkdns.com
 
 docs_dir: 'docs-dir'  # Use docs-dir for docs
 
 repo_name: penguincloud/squawk
-repo_url: https://github.com/penguincloud/squawk
+repo_url: https://github.com/penguintechinc/squawk
 edit_uri: edit/main/docs/
 
 theme:
@@ -86,11 +86,11 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/penguincloud/squawk
+      link: https://github.com/penguintechinc/squawk
     - icon: fontawesome/brands/docker
       link: https://hub.docker.com/r/penguincloud/squawk-dns-client
 
 extra_css:
   - stylesheets/extra.css
 
-copyright: Copyright &copy; 2025 PenguinCloud. All rights reserved.
+copyright: Copyright &copy; 2025 Penguin Technologies. All rights reserved.

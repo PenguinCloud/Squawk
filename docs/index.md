@@ -1,7 +1,7 @@
 # Squawk DNS Documentation
 
 <div class="hero-banner">
-  <h2>🛡️ Squawk DNS, a Penguin Cloud Solution</h2>
+  <h2>🛡️ Squawk DNS, a Penguin Technologies Solution</h2>
   <p><strong>Secure DNS-over-HTTPS system with enterprise authentication, mTLS support, and comprehensive security features.</strong></p>
 </div>
 
@@ -35,7 +35,7 @@ docker run -d \
 
 ```bash
 # Download and install (Linux example)
-wget https://github.com/penguincloud/squawk/releases/download/v1.1.1-client/squawk-dns-client_1.1.1_amd64.deb
+wget https://github.com/penguintechinc/squawk/releases/download/v1.1.1-client/squawk-dns-client_1.1.1_amd64.deb
 sudo dpkg -i squawk-dns-client_1.1.1_amd64.deb
 sudo systemctl enable --now squawk-dns-client
 ```
@@ -96,7 +96,7 @@ graph TB
 
 ## Support & Community
 
-- **GitHub Issues**: [Report bugs and feature requests](https://github.com/penguincloud/squawk/issues)
+- **GitHub Issues**: [Report bugs and feature requests](https://github.com/penguintechinc/squawk/issues)
 - **Documentation**: This comprehensive guide
 - **Enterprise Support**: [Contact PenguinCloud](mailto:sales@penguincloud.io)
 
@@ -107,5 +107,5 @@ Squawk DNS is released under the [AGPL v3 License](LICENSE.md).
 ---
 
 <div class="footer-note">
-  <p><em>Squawk DNS is a Penguin Cloud Solution - Enterprise-grade DNS security for modern organizations.</em></p>
+  <p><em>Squawk DNS is a Penguin Technologies Solution - Enterprise-grade DNS security for modern organizations.</em></p>
 </div>

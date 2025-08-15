@@ -154,9 +154,393 @@ Automated GitHub CI/CD release pipeline with comprehensive release notes:
 4. Platform-specific installation instructions
 5. GitHub releases created with comprehensive documentation
 
+# Subscription Licensing System
+Squawk DNS now includes a comprehensive subscription-based licensing system for premium features:
+
+## License Server Configuration
+- **Repository**: https://github.com/PenguinCloud/license-server - Shared license server for all Penguin Technologies products
+- **Domain**: `license.squawkdns.com` - hardcoded license server domain
+- **Technology**: py4web-based license management portal
+- **Database**: PostgreSQL for license and token storage
+- **Authentication**: Sales team access only (no customer portal)
+- **Multi-Product**: Handles licensing for Squawk DNS and other Penguin Technologies products
+
+## License Management
+- **Sales Portal**: `/sales/dashboard` - Create and manage customer licenses (sales team only)
+- **License Format**: `SQWK-XXXX-XXXX-XXXX-XXXX-YYYY` (with checksum validation)
+- **License Distribution**: Sales team emails license keys directly to customers
+- **Customer Access**: Customers do NOT access license.squawkdns.com directly
+
+## DNS Server License Integration
+- **License Validation**: `USE_LICENSE_SERVER=true` enables subscription validation
+- **Server Flag**: `--license-server` or `-l` enables license mode
+- **Token Validation**: Real-time validation via license server API endpoints
+- **Environment**: `LICENSE_SERVER_URL=https://license.squawkdns.com`
+
+## Go Client License Integration
+- **Daily Validation**: License checked once per day (not per query)
+- **Smart Caching**: 24-hour cache minimizes license server load
+- **Offline Resilience**: Falls back to cached validation if license server unavailable
+- **Backward Compatibility**: Works without license (with warnings)
+
+## License Environment Variables
+- `SQUAWK_LICENSE_SERVER_URL`: License server URL (default: https://license.squawkdns.com)
+- `SQUAWK_LICENSE_KEY`: Customer license key for evaluation/setup
+- `SQUAWK_USER_TOKEN`: Individual user token (preferred for production)
+- `SQUAWK_VALIDATE_ONLINE`: Enable online validation vs cache-only (default: true)
+- `SQUAWK_LICENSE_CACHE_TIME`: Cache time in minutes (default: 1440 = 24 hours)
+- `USE_LICENSE_SERVER`: Enable license server validation in DNS server (default: false)
+- `LICENSE_KEY`: DNS server license key for validation
+
+## Feature Comparison by Edition
+
+### Community Edition (Free)
+- Basic DNS resolution
+- Standard DNS-over-HTTPS support
+- mTLS authentication
+- Basic caching
+- Single-token authentication
+- 1 threat intelligence feed
+- Basic web console
+
+### Enterprise Self-Hosted ($5/user/month)
+- **All Community Features**
+- **Selective DNS Routing**: Per-user/group access to private and public DNS entries
+- **Advanced Token Management**: Individual user tokens with usage tracking
+- **Priority DNS Resolution**: Faster query processing for licensed users
+- **Enhanced Caching**: Advanced cache optimization and performance tuning
+- **Unlimited Threat Intelligence**: No feed limits, advanced parsers
+- **Multi-tenant Architecture**: Secure isolation between different user groups
+- **SAML/LDAP/SSO Integration**: Enterprise identity provider integration
+- **SCIM Provisioning**: Automated user provisioning and deprovisioning
+- **Technical Support**: Professional support and assistance
+- **Self-Managed**: Customer controls infrastructure and updates
+
+### Enterprise Cloud-Hosted ($7/user/month)
+- **All Self-Hosted Features**
+- **Managed Infrastructure**: Penguin Technologies operates and maintains servers
+- **99.9% SLA**: Guaranteed uptime with redundant infrastructure
+- **Automatic Updates**: Zero-downtime updates and security patches
+- **Advanced Monitoring**: 24/7 monitoring with proactive alerting
+- **Compliance Reporting**: SOC2, HIPAA, GDPR automated compliance reports
+- **24/7 Support**: Dedicated support team with guaranteed response times
+- **Global Infrastructure**: Multi-region deployment with CDN edge locations
+- **Advanced Threat Intel**: Curated and enhanced threat intelligence feeds
+- **Custom Development**: Dedicated engineering resources for custom features
+- **Enterprise Monitoring**: Advanced logging, alerting, and SIEM integration
+- **Priority Processing**: Highest priority request processing across all users
+
+## Key Enterprise Benefit: Selective DNS Routing
+The major advantage of enterprise licensing is the ability to have **one secure DNS endpoint that selectively provides private and public DNS entries based on user or group permissions**:
+- Internal users get access to both private corporate DNS entries AND public internet DNS
+- External users only get public DNS resolution
+- Different user groups can have different levels of DNS access
+- Secure authentication ensures only authorized users can resolve private DNS entries
+- Single DNS infrastructure serves multiple security contexts
+
+# Selective DNS Routing Architecture
+The selective DNS routing system is built on a token-based identity and group membership model:
+
+## Core Concept
+- **Individual User Tokens**: Each user has a unique token generated when created on the platform
+- **Group Membership**: Tokens map to groups (configured manually or via IDP integration)
+- **Permission-Based Response**: Groups determine which DNS zones/entries are visible to users
+- **Single Endpoint**: Same DNS server endpoint serves different responses based on user's group membership
+
+## Token Management System
+### User Token Creation
+- Each user receives a unique authentication token
+- Tokens are mapped to user identity and group memberships
+- Token validation occurs on every DNS request
+
+### Group Types
+- **INTERNAL**: Full access to private + public DNS (company employees)
+- **EXTERNAL**: Public DNS only (general internet users)  
+- **PARTNER**: Limited private zones + public DNS (business partners)
+- **CONTRACTOR**: Specific private zones + public DNS (contractors)
+- **ADMIN**: Full access + management capabilities
+
+## DNS Zone Visibility
+### Visibility Levels
+- **PUBLIC**: Visible to all users (example.com, google.com)
+- **INTERNAL**: Visible to internal groups only (intranet.company.com)
+- **RESTRICTED**: Visible to specific groups only (secure.company.com)
+- **PRIVATE**: Visible to admins only (admin.company.com)
+
+### Response Filtering
+1. User makes DNS request with authentication token
+2. System identifies user's group memberships
+3. DNS resolver checks if requested domain is accessible to user's groups
+4. Returns appropriate response:
+   - **Authorized**: Returns actual DNS records
+   - **Unauthorized**: Returns NXDOMAIN (domain appears to not exist)
+
+## IDP Integration (Enterprise Only)
+### SAML Integration
+- Maps SAML assertion groups to internal Squawk DNS groups
+- Automatic group assignment based on IDP group membership
+- Real-time group sync during authentication
+
+### LDAP Integration  
+- Queries LDAP directory for user group memberships
+- Maps LDAP groups to internal DNS access groups
+- Supports nested group structures
+
+### SCIM Provisioning
+- Automated user creation and deprovisioning
+- Group membership synchronization
+- Lifecycle management integration
+
+## Database Schema
+### Core Tables
+- `tokens`: Individual user authentication tokens
+- `groups`: Access control groups with permissions
+- `user_groups`: Many-to-many mapping of users to groups
+- `dns_zones`: DNS zones with visibility settings
+- `dns_records`: Individual DNS records with per-record visibility
+- `group_zone_permissions`: Group access permissions to DNS zones
+
+### IDP Integration Tables
+- `idp_group_mappings`: Maps IDP groups to local groups
+- `saml_assertions`: Cached SAML group data
+- `ldap_sync_log`: LDAP synchronization audit trail
+
+# Enterprise Feature Implementation
+All enterprise features are implemented with proper license enforcement across two enterprise tiers:
+
+## Enterprise Tier Structure
+
+### Community Edition (Free)
+- Basic DNS resolution and caching
+- Single threat intelligence feed (1 feed limit)
+- Standard DNS-over-HTTPS support
+- mTLS authentication
+- Basic web console
+
+### Enterprise Self-Hosted ($5/user/month)
+- All Community features
+- Unlimited threat intelligence feeds
+- Advanced token management
+- Selective DNS routing
+- Priority DNS resolution
+- Enhanced caching and analytics
+- Technical support
+- Multi-tenant architecture
+- SAML/LDAP/SSO integration
+- Self-managed infrastructure
+
+### Enterprise Cloud-Hosted ($7/user/month)  
+- All Self-Hosted features
+- Penguin Technologies managed infrastructure
+- 99.9% SLA with redundancy
+- Automatic updates and patching
+- Advanced monitoring and alerting
+- Compliance reporting (SOC2, HIPAA, GDPR)
+- 24/7 managed support
+- Global CDN and edge locations
+- Advanced threat intelligence curation
+- Custom integrations and development
+
+## License Enforcement Model
+- **Feature Gates**: Each feature tier checks appropriate license status before activation
+- **Graceful Degradation**: Unlicensed features return appropriate error messages with upgrade prompts
+- **Real-time Validation**: License status checked via license server API
+- **Offline Resilience**: Cached license validation for temporary connectivity loss
+- **Tier Detection**: Automatic detection of Self-Hosted vs Cloud-Hosted licensing
+
+## Priority DNS Resolution
+- **Request Queuing**: Enterprise users get priority in processing queue
+- **Performance Tiers**: Different response time guarantees based on license
+- **Load Balancing**: Enterprise requests bypass rate limits
+
+## Enhanced Caching
+- **Extended TTLs**: Enterprise users get longer cache retention
+- **Predictive Prefetching**: AI-based query prediction for common patterns
+- **Premium Cache Layer**: Separate high-performance cache for licensed users
+
+## Analytics & Reporting
+- **Query Tracking**: Detailed logging of all DNS requests per user
+- **Usage Reports**: Daily, weekly, monthly usage analytics
+- **Performance Metrics**: Response times, cache hit rates, error analysis
+- **Compliance Reports**: Automated generation of regulatory compliance reports
+
+## Multi-Tenant Architecture
+- **Tenant Isolation**: Complete DNS namespace separation per organization
+- **Resource Quotas**: Per-tenant limits on queries, users, zones
+- **Custom Configurations**: Tenant-specific DNS policies and settings
+
+## Enterprise Monitoring
+- **Security Audit Logs**: Comprehensive logging of all authentication and access events
+- **SIEM Integration**: Export logs in CEF, LEEF, and JSON formats
+- **Alert Rules**: Configurable thresholds for error rates, response times
+- **Compliance Dashboards**: Real-time visibility into security posture
+
+# Server Implementation Files
+## Core Server Files
+- `dns-server/bins/server_optimized.py`: Standard community server
+- `dns-server/bins/server_premium_integrated.py`: Enterprise server with all features
+- `dns-server/bins/premium_features.py`: Core enterprise functionality module
+- `dns-server/bins/selective_dns_routing.py`: User/group-based DNS filtering
+
+## Feature Modules
+- `cache_manager.py`: Enhanced caching with enterprise features
+- `cert_manager.py`: mTLS certificate management
+- `request_logger.py`: Advanced logging and analytics
+- Web console: Token and group management interface
+
+# GitHub Issues Implementation Status
+All open GitHub issues have been addressed with full implementations:
+
+## Issue #24: Local DNS Fallback ✅ **IMPLEMENTED**
+- **File**: `dns-client/bins/systray.py`
+- **Features**: Automatic fallback to DHCP DNS servers for captive portals
+- **Platforms**: Windows (netsh), macOS (networksetup), Linux (manual)
+- **Integration**: One-click toggle in system tray application
+
+## Issue #23: Per User Token ✅ **IMPLEMENTED** 
+- **File**: `dns-server/bins/selective_dns_routing.py`
+- **Features**: Individual user tokens with group-based permissions
+- **JWT Integration**: Token validation with user identity mapping
+- **Audit Trail**: Per-user query logging and analytics
+
+## Issue #17: WHOIS Lookup Section ✅ **IMPLEMENTED**
+- **File**: `dns-server/bins/whois_manager.py` 
+- **Features**: Domain and IP WHOIS lookups with PostgreSQL caching
+- **Web Interface**: Searchable interface via py4web forms and grids
+- **API**: RESTful endpoints for programmatic access
+- **Caching**: Monthly cleanup with configurable retention policies
+
+## Issue #16: IOC API Management ✅ **IMPLEMENTED**
+- **File**: `dns-server/bins/ioc_manager.py`
+- **Features**: Per-token IOC overrides (allow/block specific domains/IPs)
+- **Scope Control**: User-specific, token-specific, or global overrides
+- **API**: Full CRUD operations via REST API
+- **Integration**: Works with existing authentication and mTLS
+
+## Issue #15: IOC/Threat Intelligence Blocking ✅ **IMPLEMENTED**
+- **File**: `dns-server/bins/ioc_manager.py`
+- **Feed Sources**: abuse.ch URLhaus, Malware Domains, Spamhaus DBL, Emerging Threats, Feodo Tracker
+- **Real-time Updates**: Automatic feed updates with configurable intervals
+- **Performance**: In-memory caching for fast lookup performance
+- **Override System**: User-specific allow/block overrides
+
+## Issue #14: Prometheus/Grafana Stats ✅ **IMPLEMENTED**
+- **File**: `dns-server/bins/prometheus_metrics.py`
+- **Metrics**: DNS queries, response times, cache hits, top domains, user analytics
+- **Integration**: Native Prometheus metrics endpoint at `/metrics`
+- **Dashboard Ready**: Compatible with Grafana for visualization
+- **Performance**: Background collection with minimal overhead
+
+## Issue #10: Client Configuration Pull ✅ **IMPLEMENTED**
+- **File**: `dns-server/bins/client_config_api.py` and `py4web_extended_app.py`
+- **Features**: JWT-based client authentication with deployment domains
+- **Security Integration**: Uses existing token authentication and mTLS
+- **API**: Native py4web REST API for configuration management
+- **Role-based Access**: Client-Reader, Client-Maintainer, Domain-Admin roles
+- **Py4web Integration**: Native forms, grids, and REST endpoints
+
+# Py4web Integration
+All new features utilize py4web's native capabilities:
+
+## Native REST API
+- **Publisher**: Automatic CRUD operations for database tables
+- **Authentication**: Integrated with py4web auth system
+- **CORS**: Cross-origin request support for web interfaces
+
+## Web Interface Components
+- **Forms**: FormStyleBulma for consistent UI across all features
+- **Grids**: Automatic data grids with search, sort, and pagination
+- **Dashboard**: Combined statistics view with real-time data
+
+## Background Tasks
+- **Scheduler**: Automatic IOC feed updates, cache cleanup, client maintenance
+- **Async Support**: Full asyncio integration for non-blocking operations
+
+## Security Integration
+- **Authentication**: Seamless integration with existing token system
+- **mTLS Support**: Certificate validation for client configuration API
+- **Permission System**: Role-based access control for all features
+
+# License Requirements by Feature
+
+## Community Edition Features (Free)
+- Basic DNS resolution and caching
+- Standard DNS-over-HTTPS support  
+- mTLS authentication
+- Single threat intelligence feed
+- Basic web console
+- Community support via GitHub
+
+## Enterprise Self-Hosted Features ($5/user/month)
+- **All Community Features**
+- **SAML/SSO**: Enterprise identity provider integration
+- **SCIM Provisioning**: Automated user management
+- **Advanced Analytics**: Detailed reporting and compliance features
+- **Priority Support**: Professional support with SLA guarantees
+- **Multi-tenant**: Organization-level isolation and management
+- **Unlimited Threat Intel**: No limits on threat intelligence feeds
+- **Selective DNS Routing**: Per-user/group access control
+- **Self-Managed Infrastructure**: Customer controls deployment and updates
+
+## Enterprise Cloud-Hosted Exclusive Features ($7/user/month)
+
+### 🏢 Managed Infrastructure
+- **Penguin Technologies Operated**: Professional DevOps team manages all infrastructure
+- **Multi-Region Deployment**: Geographically distributed servers for optimal performance
+- **Auto-Scaling**: Automatic resource scaling based on demand
+- **High Availability**: 99.9% uptime SLA with redundant infrastructure
+- **Disaster Recovery**: Automated backup and recovery procedures
+
+### 🔄 Automatic Operations
+- **Zero-Downtime Updates**: Seamless rolling updates without service interruption
+- **Security Patching**: Automatic security updates and vulnerability management
+- **Configuration Management**: Centralized configuration with change tracking
+- **Health Monitoring**: 24/7 automated monitoring with proactive alerting
+
+### 📊 Advanced Monitoring & Alerting
+- **Real-Time Dashboards**: Live system performance and usage metrics
+- **Predictive Analytics**: AI-powered capacity planning and performance optimization
+- **Custom Alerting**: Configurable alerts for performance, security, and availability
+- **Incident Response**: Dedicated NOC team for 24/7 incident management
+
+### 📋 Compliance & Reporting
+- **SOC2 Type II**: Automated SOC2 compliance reporting and audits
+- **HIPAA Compliance**: Healthcare data protection with encrypted storage
+- **GDPR Compliance**: EU data protection with data residency controls
+- **Custom Compliance**: Support for industry-specific compliance requirements
+- **Audit Trails**: Comprehensive logging for regulatory compliance
+
+### 🌐 Global Performance Infrastructure
+- **CDN Integration**: Cloudflare-powered global content delivery network
+- **Edge Locations**: DNS resolution from geographically closest locations
+- **Anycast Network**: Automatic routing to optimal servers
+- **Network Optimization**: Premium network peering for reduced latency
+
+### 🎯 Advanced Threat Intelligence
+- **Curated Feeds**: Professional threat intelligence curation and validation
+- **Custom Threat Intel**: Penguin Technologies proprietary threat research
+- **Real-Time Updates**: Sub-minute threat intelligence updates
+- **Threat Attribution**: Enhanced context and attribution for security events
+- **Custom IOC Integration**: Private threat intelligence feed integration
+
+### 👥 Dedicated Support & Development
+- **24/7 Dedicated Support**: Guaranteed response times with escalation procedures
+- **Dedicated Customer Success Manager**: Personal account management
+- **Custom Feature Development**: Dedicated engineering resources for customer-specific needs
+- **Priority Feature Requests**: Influence on product roadmap and feature prioritization
+- **Direct Engineering Access**: Direct communication with development team
+
+### 🔐 Enterprise Security Enhancements
+- **Advanced Threat Detection**: ML-based anomaly detection and threat hunting
+- **Zero Trust Architecture**: Identity-based access with continuous verification
+- **Security Operations Center**: 24/7 security monitoring and incident response
+- **Penetration Testing**: Regular security assessments and vulnerability testing
+- **Threat Intelligence Sharing**: Bi-directional threat intelligence with customers
+
 # Important Notes
 - **Documentation Domain**: All documentation references should use `squawkdns.com`
 - **Web Console**: Default available at `http://localhost:8000/dns_console`
+- **License Portal**: Sales team only at `https://license.squawkdns.com/sales/dashboard` (internal access)
 - **Health Monitoring**: System tray provides real-time server health status
 - **DNS Validation**: All components implement RFC 1035 compliant validation
 - **Multi-Server Support**: Clients support multiple DNS servers with automatic failover

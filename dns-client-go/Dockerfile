@@ -1,7 +1,7 @@
 # Multi-stage build for Squawk DNS Client (Go)
 # 
 # Build stage
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git make
@@ -23,8 +23,9 @@ ARG VERSION=docker
 ARG BUILD_TIME
 ARG GIT_COMMIT
 
-RUN CGO_ENABLED=0 GOOS=linux go build \
-    -ldflags "-X main.version=${VERSION} -X main.buildTime=${BUILD_TIME} -X main.gitCommit=${GIT_COMMIT}" \
+RUN BUILD_TIME=$(date -u +%Y-%m-%d_%H:%M:%S) && \
+    CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags "-X 'main.version=${VERSION}' -X 'main.buildTime=${BUILD_TIME}' -X 'main.gitCommit=${GIT_COMMIT}'" \
     -o bin/squawk-dns-client \
     ./cmd/squawk-dns-client
 
@@ -44,9 +45,6 @@ RUN mkdir -p /etc/squawk /var/log/squawk && \
 
 # Copy binary from builder
 COPY --from=builder /app/bin/squawk-dns-client /usr/local/bin/
-
-# Copy example configuration
-COPY --from=builder /app/configs/example.yaml /etc/squawk/client.yaml.example
 
 # Set permissions
 RUN chmod +x /usr/local/bin/squawk-dns-client

@@ -6,11 +6,20 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/penguincloud/squawk/dns-client-go/pkg/client"
-	"github.com/penguincloud/squawk/dns-client-go/pkg/forwarder"
+	"github.com/penguintechinc/squawk/dns-client-go/pkg/client"
+	"github.com/penguintechinc/squawk/dns-client-go/pkg/forwarder"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
+
+// LicenseConfig holds license validation configuration
+type LicenseConfig struct {
+	ServerURL      string `yaml:"server_url" json:"server_url"`
+	LicenseKey     string `yaml:"license_key" json:"license_key"`
+	UserToken      string `yaml:"user_token" json:"user_token"`
+	ValidateOnline bool   `yaml:"validate_online" json:"validate_online"`
+	CacheTime      int    `yaml:"cache_time" json:"cache_time"` // minutes
+}
 
 // AppConfig holds the complete application configuration
 type AppConfig struct {
@@ -18,6 +27,7 @@ type AppConfig struct {
 	RecordType   string                `yaml:"record_type" json:"record_type"`
 	Client       *client.Config        `yaml:"client" json:"client"`
 	Forwarder    *forwarder.Config     `yaml:"forwarder" json:"forwarder"`
+	License      *LicenseConfig        `yaml:"license" json:"license"`
 	LogLevel     string                `yaml:"log_level" json:"log_level"`
 }
 
@@ -43,6 +53,13 @@ func DefaultConfig() *AppConfig {
 			TCPAddress: "127.0.0.1:53",
 			ListenUDP:  false,
 			ListenTCP:  false,
+		},
+		License: &LicenseConfig{
+			ServerURL:      "https://license.squawkdns.com",
+			LicenseKey:     "",
+			UserToken:      "",
+			ValidateOnline: true,
+			CacheTime:      1440, // 24 hours (daily validation)
 		},
 	}
 }
@@ -182,6 +199,27 @@ func loadFromEnv(config *AppConfig) {
 			config.Forwarder.ListenTCP = val
 		}
 	}
+
+	// License configuration
+	if licenseServerURL := os.Getenv("SQUAWK_LICENSE_SERVER_URL"); licenseServerURL != "" {
+		config.License.ServerURL = licenseServerURL
+	}
+	if licenseKey := os.Getenv("SQUAWK_LICENSE_KEY"); licenseKey != "" {
+		config.License.LicenseKey = licenseKey
+	}
+	if userToken := os.Getenv("SQUAWK_USER_TOKEN"); userToken != "" {
+		config.License.UserToken = userToken
+	}
+	if validateOnline := os.Getenv("SQUAWK_VALIDATE_ONLINE"); validateOnline != "" {
+		if val, err := strconv.ParseBool(validateOnline); err == nil {
+			config.License.ValidateOnline = val
+		}
+	}
+	if cacheTime := os.Getenv("SQUAWK_LICENSE_CACHE_TIME"); cacheTime != "" {
+		if val, err := strconv.Atoi(cacheTime); err == nil && val > 0 {
+			config.License.CacheTime = val
+		}
+	}
 }
 
 // validateConfig validates the configuration
@@ -223,6 +261,14 @@ func validateConfig(config *AppConfig) error {
 		}
 	}
 
+	// License validation
+	if config.License == nil {
+		return fmt.Errorf("license configuration is required")
+	}
+
+	// License is optional for backward compatibility
+	// Missing license will be handled at runtime with appropriate warnings
+
 	return nil
 }
 
@@ -258,6 +304,11 @@ func GetEnvVarList() []string {
 		"SQUAWK_TCP_ADDRESS", 
 		"SQUAWK_LISTEN_UDP",
 		"SQUAWK_LISTEN_TCP",
+		"SQUAWK_LICENSE_SERVER_URL",
+		"SQUAWK_LICENSE_KEY",
+		"SQUAWK_USER_TOKEN",
+		"SQUAWK_VALIDATE_ONLINE",
+		"SQUAWK_LICENSE_CACHE_TIME",
 		"LOG_LEVEL",
 		// Legacy support
 		"CLIENT_CERT_PATH",
@@ -285,6 +336,12 @@ func (c *AppConfig) String() string {
 	sb.WriteString("\nForwarder Configuration:\n")
 	sb.WriteString(fmt.Sprintf("  UDP Address: %s (Listen: %t)\n", c.Forwarder.UDPAddress, c.Forwarder.ListenUDP))
 	sb.WriteString(fmt.Sprintf("  TCP Address: %s (Listen: %t)\n", c.Forwarder.TCPAddress, c.Forwarder.ListenTCP))
+	sb.WriteString("\nLicense Configuration:\n")
+	sb.WriteString(fmt.Sprintf("  Server URL: %s\n", c.License.ServerURL))
+	sb.WriteString(fmt.Sprintf("  License Key: %s\n", maskToken(c.License.LicenseKey)))
+	sb.WriteString(fmt.Sprintf("  User Token: %s\n", maskToken(c.License.UserToken)))
+	sb.WriteString(fmt.Sprintf("  Validate Online: %t\n", c.License.ValidateOnline))
+	sb.WriteString(fmt.Sprintf("  Cache Time: %d minutes\n", c.License.CacheTime))
 	
 	return sb.String()
 }

@@ -1,8 +1,8 @@
-name: Go Client Release
+name: Go Client Build and Release
 
 on:
   push:
-    branches: ['main']
+    branches: ['*']
   pull_request:
     branches: ['main']
 
@@ -11,7 +11,7 @@ env:
   APP_NAME: 'squawk-dns-client'
 
 jobs:
-  # Test job runs on PRs and main pushes
+  # Test job runs on PRs and pushes
   test:
     name: Test Go Client
     runs-on: ubuntu-latest
@@ -54,486 +54,218 @@ jobs:
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           make security
 
-  # Build job runs on both PRs and pushes for verification
-  build:
-    name: Build Go Client
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Build application
-        working-directory: dns-client-go
-        run: |
-          make build
-          echo "Build successful - binary created at bin/squawk-dns-client"
-          ls -la bin/
-
-  # Release job only runs on main branch pushes
+  # Build and release job for all pushes
   build-and-release:
     name: Build and Release Go Client
     runs-on: ubuntu-latest
-    needs: [test, build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: test
+    if: github.event_name == 'push'
     permissions:
       contents: write
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Read version from .version file
-        id: version
+      - name: Determine binary name and Docker tags
+        id: naming
         run: |
-          VERSION=$(cat .version | tr -d '\n' | sed 's/^v//')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "TAG=v$VERSION-client" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
-
-      - name: Check if client tag exists
-        id: tag_check
-        run: |
-          if git rev-parse "v${{ steps.version.outputs.VERSION }}-client" >/dev/null 2>&1; then
-            echo "EXISTS=true" >> $GITHUB_OUTPUT
-            echo "Client tag v${{ steps.version.outputs.VERSION }}-client already exists, skipping release"
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          
+          if [ "$GITHUB_REF" = "refs/heads/main" ] && [ -f .version ]; then
+            VERSION=$(cat .version | tr -d '\n' | sed 's/^v//')
+            echo "BINARY_NAME=squawk" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "DOCKER_TAG=$VERSION" >> $GITHUB_OUTPUT
+            echo "DOCKER_TAG_LATEST=true" >> $GITHUB_OUTPUT
+            echo "RELEASE_TAG=v$VERSION-client" >> $GITHUB_OUTPUT
           else
-            echo "EXISTS=false" >> $GITHUB_OUTPUT
-            echo "Client tag v${{ steps.version.outputs.VERSION }}-client does not exist, proceeding with release"
+            echo "BINARY_NAME=squawk-beta" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+            echo "VERSION=dev-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+            echo "DOCKER_TAG=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "DOCKER_TAG_LATEST=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set up Go
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
+      - name: Check if release tag exists
+        if: steps.naming.outputs.IS_RELEASE == 'true'
+        id: tag_check
+        run: |
+          if git rev-parse "${{ steps.naming.outputs.RELEASE_TAG }}" >/dev/null 2>&1; then
+            echo "EXISTS=true" >> $GITHUB_OUTPUT
+            echo "Release tag ${{ steps.naming.outputs.RELEASE_TAG }} already exists, skipping GitHub release creation"
+          else
+            echo "EXISTS=false" >> $GITHUB_OUTPUT
+            echo "Release tag ${{ steps.naming.outputs.RELEASE_TAG }} does not exist, proceeding with GitHub release"
+          fi
 
-      - name: Cache Go modules
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('dns-client-go/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Install dependencies
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: go mod download
-
-      # Build for all platforms
-      - name: Build Linux AMD64
-        if: steps.tag_check.outputs.EXISTS == 'false'
+      # Build for all platforms using containerized approach
+      - name: Build All Platforms (Containerized)
         working-directory: dns-client-go
         run: |
-          mkdir -p build/linux-amd64
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/linux-amd64/${{ env.APP_NAME }} \
-            ./cmd/${{ env.APP_NAME }}
+          # Use Docker for consistent cross-compilation environment
+          docker run --rm -v $(pwd):/workspace -w /workspace \
+            golang:${{ env.GO_VERSION }}-alpine \
+            sh -c '
+              apk add --no-cache git
+              
+              echo "Building ${{ steps.naming.outputs.BINARY_NAME }} for all platforms..."
+              
+              VERSION="${{ steps.naming.outputs.VERSION }}"
+              BINARY_NAME="${{ steps.naming.outputs.BINARY_NAME }}"
+              
+              # Linux AMD64
+              mkdir -p build/linux-amd64
+              CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+                -ldflags "-X main.version=$VERSION -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/linux-amd64/$BINARY_NAME \
+                ./cmd/${{ env.APP_NAME }}
+              
+              # Linux ARM64
+              mkdir -p build/linux-arm64
+              CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build \
+                -ldflags "-X main.version=$VERSION -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/linux-arm64/$BINARY_NAME \
+                ./cmd/${{ env.APP_NAME }}
+              
+              # macOS AMD64
+              mkdir -p build/darwin-amd64
+              CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build \
+                -ldflags "-X main.version=$VERSION -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/darwin-amd64/$BINARY_NAME \
+                ./cmd/${{ env.APP_NAME }}
+              
+              # macOS ARM64 (Apple Silicon)
+              mkdir -p build/darwin-arm64
+              CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build \
+                -ldflags "-X main.version=$VERSION -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/darwin-arm64/$BINARY_NAME \
+                ./cmd/${{ env.APP_NAME }}
+              
+              # Windows AMD64
+              mkdir -p build/windows-amd64
+              CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
+                -ldflags "-X main.version=$VERSION -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
+                -o build/windows-amd64/$BINARY_NAME.exe \
+                ./cmd/${{ env.APP_NAME }}
+              
+              echo "Build completed for all platforms"
+              find build -name "*$BINARY_NAME*" -type f -exec ls -la {} \;
+            '
 
-      - name: Build Linux ARM64
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/linux-arm64
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/linux-arm64/${{ env.APP_NAME }} \
-            ./cmd/${{ env.APP_NAME }}
-
-      - name: Build macOS AMD64
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/darwin-amd64
-          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/darwin-amd64/${{ env.APP_NAME }} \
-            ./cmd/${{ env.APP_NAME }}
-
-      - name: Build macOS ARM64
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/darwin-arm64
-          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/darwin-arm64/${{ env.APP_NAME }} \
-            ./cmd/${{ env.APP_NAME }}
-
-      - name: Build Windows AMD64
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/windows-amd64
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build \
-            -ldflags "-X main.version=${{ steps.version.outputs.VERSION }} -X main.buildTime=$(date -u +%Y-%m-%d_%H:%M:%S) -X main.gitCommit=${{ github.sha }}" \
-            -o build/windows-amd64/${{ env.APP_NAME }}.exe \
-            ./cmd/${{ env.APP_NAME }}
-
-      # Create macOS universal binary
-      - name: Create macOS Universal Binary
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/darwin-universal
-          # Install lipo tool (available on GitHub runners)
-          lipo -create -output build/darwin-universal/${{ env.APP_NAME }} \
-            build/darwin-amd64/${{ env.APP_NAME }} \
-            build/darwin-arm64/${{ env.APP_NAME }}
-          # Verify the universal binary
-          file build/darwin-universal/${{ env.APP_NAME }}
-          lipo -info build/darwin-universal/${{ env.APP_NAME }}
-
-      # Create Debian packages
-      - name: Create Debian Package (AMD64)
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/debian-amd64/DEBIAN
-          mkdir -p build/debian-amd64/usr/local/bin
-          mkdir -p build/debian-amd64/etc/systemd/system
-          mkdir -p build/debian-amd64/usr/share/doc/${{ env.APP_NAME }}
-          
-          # Copy binary
-          cp build/linux-amd64/${{ env.APP_NAME }} build/debian-amd64/usr/local/bin/
-          
-          # Create control file
-          cat > build/debian-amd64/DEBIAN/control << EOF
-          Package: ${{ env.APP_NAME }}
-          Version: ${{ steps.version.outputs.VERSION }}
-          Section: net
-          Priority: optional
-          Architecture: amd64
-          Maintainer: PenguinCloud <support@penguintech.group>
-          Description: Squawk DNS-over-HTTPS client
-           A high-performance DNS-over-HTTPS client with mTLS support and local DNS forwarding.
-           Provides secure DNS resolution using HTTPS protocol with mutual TLS authentication.
-          Depends: libc6
-          EOF
-          
-          # Create systemd service
-          cat > build/debian-amd64/etc/systemd/system/${{ env.APP_NAME }}.service << 'EOF'
-          [Unit]
-          Description=Squawk DNS Client - DNS-over-HTTPS Forwarder
-          After=network.target
-          Wants=network.target
-          
-          [Service]
-          Type=simple
-          ExecStart=/usr/local/bin/${{ env.APP_NAME }} forward --config /etc/squawk/client.yaml
-          Restart=always
-          RestartSec=5
-          User=nobody
-          Group=nogroup
-          
-          [Install]
-          WantedBy=multi-user.target
-          EOF
-          
-          # Create copyright file
-          cat > build/debian-amd64/usr/share/doc/${{ env.APP_NAME }}/copyright << 'EOF'
-          Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-          Upstream-Name: squawk-dns-client
-          Source: https://github.com/penguincloud/squawk
-          
-          Files: *
-          Copyright: 2024 PenguinCloud
-          License: MIT
-          EOF
-          
-          # Set permissions
-          chmod 755 build/debian-amd64/usr/local/bin/${{ env.APP_NAME }}
-          chmod 644 build/debian-amd64/etc/systemd/system/${{ env.APP_NAME }}.service
-          
-          # Build package
-          dpkg-deb --build build/debian-amd64 build/${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_amd64.deb
-
-      - name: Create Debian Package (ARM64)
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go
-        run: |
-          mkdir -p build/debian-arm64/DEBIAN
-          mkdir -p build/debian-arm64/usr/local/bin
-          mkdir -p build/debian-arm64/etc/systemd/system
-          mkdir -p build/debian-arm64/usr/share/doc/${{ env.APP_NAME }}
-          
-          # Copy binary
-          cp build/linux-arm64/${{ env.APP_NAME }} build/debian-arm64/usr/local/bin/
-          
-          # Create control file
-          cat > build/debian-arm64/DEBIAN/control << EOF
-          Package: ${{ env.APP_NAME }}
-          Version: ${{ steps.version.outputs.VERSION }}
-          Section: net
-          Priority: optional
-          Architecture: arm64
-          Maintainer: PenguinCloud <support@penguintech.group>
-          Description: Squawk DNS-over-HTTPS client
-           A high-performance DNS-over-HTTPS client with mTLS support and local DNS forwarding.
-           Provides secure DNS resolution using HTTPS protocol with mutual TLS authentication.
-          Depends: libc6
-          EOF
-          
-          # Create systemd service
-          cat > build/debian-arm64/etc/systemd/system/${{ env.APP_NAME }}.service << 'EOF'
-          [Unit]
-          Description=Squawk DNS Client - DNS-over-HTTPS Forwarder
-          After=network.target
-          Wants=network.target
-          
-          [Service]
-          Type=simple
-          ExecStart=/usr/local/bin/${{ env.APP_NAME }} forward --config /etc/squawk/client.yaml
-          Restart=always
-          RestartSec=5
-          User=nobody
-          Group=nogroup
-          
-          [Install]
-          WantedBy=multi-user.target
-          EOF
-          
-          # Create copyright file
-          cat > build/debian-arm64/usr/share/doc/${{ env.APP_NAME }}/copyright << 'EOF'
-          Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-          Upstream-Name: squawk-dns-client
-          Source: https://github.com/penguincloud/squawk
-          
-          Files: *
-          Copyright: 2024 PenguinCloud
-          License: MIT
-          EOF
-          
-          # Set permissions
-          chmod 755 build/debian-arm64/usr/local/bin/${{ env.APP_NAME }}
-          chmod 644 build/debian-arm64/etc/systemd/system/${{ env.APP_NAME }}.service
-          
-          # Build package
-          dpkg-deb --build build/debian-arm64 build/${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_arm64.deb
-
-      # Create release packages
+      # Create release packages (only for releases)
       - name: Create Release Packages
-        if: steps.tag_check.outputs.EXISTS == 'false'
+        if: steps.naming.outputs.IS_RELEASE == 'true' && (steps.tag_check.outputs.EXISTS == 'false' || steps.tag_check.outputs.EXISTS == '')
         working-directory: dns-client-go
         run: |
           mkdir -p build/packages
+          BINARY_NAME="${{ steps.naming.outputs.BINARY_NAME }}"
+          VERSION="${{ steps.naming.outputs.VERSION }}"
           
-          # Linux packages
-          cd build/linux-amd64 && tar -czf ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz ${{ env.APP_NAME }}
-          cd ../linux-arm64 && tar -czf ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-linux-arm64.tar.gz ${{ env.APP_NAME }}
+          # Create release archives
+          cd build/linux-amd64 && tar -czf ../packages/squawk-$VERSION-linux-amd64.tar.gz $BINARY_NAME
+          cd ../linux-arm64 && tar -czf ../packages/squawk-$VERSION-linux-arm64.tar.gz $BINARY_NAME
+          cd ../darwin-amd64 && tar -czf ../packages/squawk-$VERSION-darwin-amd64.tar.gz $BINARY_NAME
+          cd ../darwin-arm64 && tar -czf ../packages/squawk-$VERSION-darwin-arm64.tar.gz $BINARY_NAME
+          cd ../windows-amd64 && zip -q ../packages/squawk-$VERSION-windows-amd64.zip $BINARY_NAME.exe
           
-          # macOS packages  
-          cd ../darwin-amd64 && tar -czf ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-amd64.tar.gz ${{ env.APP_NAME }}
-          cd ../darwin-arm64 && tar -czf ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-arm64.tar.gz ${{ env.APP_NAME }}
-          cd ../darwin-universal && tar -czf ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-universal.tar.gz ${{ env.APP_NAME }}
-          
-          # Windows packages
-          cd ../windows-amd64 && zip -q ../packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-windows-amd64.zip ${{ env.APP_NAME }}.exe
-          
-          # Copy Debian packages
-          cd ..
-          cp ${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_amd64.deb packages/
-          cp ${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_arm64.deb packages/
-
-      # Generate checksums
-      - name: Generate Checksums
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        working-directory: dns-client-go/build/packages
-        run: |
+          # Generate checksums
+          cd ../packages
           sha256sum * > SHA256SUMS
-          cat SHA256SUMS
 
-      # Extract release notes from RELEASE_NOTES.md
-      - name: Extract Release Notes
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        run: |
-          chmod +x .github/scripts/extract-release-notes.sh
-          GITHUB_REPOSITORY="${{ github.repository }}" \
-          GITHUB_SHA="${{ github.sha }}" \
-          .github/scripts/extract-release-notes.sh client "${{ steps.version.outputs.VERSION }}" release_body.md
-      
-      # Create GitHub Release with extracted content
-      - name: Create Release
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/create-release@v1
-        id: create_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.version.outputs.TAG }}
-          release_name: Squawk DNS Client (Go) v${{ steps.version.outputs.VERSION }}
-          draft: false
-          prerelease: false
-          body_path: release_body.md
-
-      # Upload release assets
-      - name: Upload Linux AMD64 Archive
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
-          asset_name: ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload Linux ARM64 Archive
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-linux-arm64.tar.gz
-          asset_name: ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-linux-arm64.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload macOS Universal Archive
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-universal.tar.gz
-          asset_name: ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-universal.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload macOS AMD64 Archive
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-amd64.tar.gz
-          asset_name: ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-amd64.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload macOS ARM64 Archive
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-arm64.tar.gz
-          asset_name: ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-darwin-arm64.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload Windows Archive
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-windows-amd64.zip
-          asset_name: ${{ env.APP_NAME }}-${{ steps.version.outputs.VERSION }}-windows-amd64.zip
-          asset_content_type: application/zip
-
-      - name: Upload Debian AMD64 Package
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_amd64.deb
-          asset_name: ${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_amd64.deb
-          asset_content_type: application/vnd.debian.binary-package
-
-      - name: Upload Debian ARM64 Package
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_arm64.deb
-          asset_name: ${{ env.APP_NAME }}_${{ steps.version.outputs.VERSION }}_arm64.deb
-          asset_content_type: application/vnd.debian.binary-package
-
-      - name: Upload Checksums
-        if: steps.tag_check.outputs.EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dns-client-go/build/packages/SHA256SUMS
-          asset_name: SHA256SUMS
-          asset_content_type: text/plain
-
-      # Docker build and push
+      # Docker build and push for all pushes
       - name: Set up Docker Buildx
-        if: steps.tag_check.outputs.EXISTS == 'false'
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: steps.tag_check.outputs.EXISTS == 'false'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Log in to GitHub Container Registry
-        if: steps.tag_check.outputs.EXISTS == 'false'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build and push Go client Docker image
-      - name: Build and push Go client Docker image
-        if: steps.tag_check.outputs.EXISTS == 'false'
+      # Build and push Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: dns-client-go
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
-            VERSION=${{ steps.version.outputs.VERSION }}
+            VERSION=${{ steps.naming.outputs.VERSION }}
             BUILD_TIME=$(date -u +%Y-%m-%d_%H:%M:%S)
             GIT_COMMIT=${{ github.sha }}
+            BINARY_NAME=${{ steps.naming.outputs.BINARY_NAME }}
           tags: |
-            penguincloud/${{ env.APP_NAME }}:${{ steps.version.outputs.VERSION }}
-            penguincloud/${{ env.APP_NAME }}:latest
-            ghcr.io/${{ github.repository }}-go:${{ steps.version.outputs.VERSION }}
-            ghcr.io/${{ github.repository }}-go:latest
+            penguincloud/${{ env.APP_NAME }}:${{ steps.naming.outputs.DOCKER_TAG }}
+            ghcr.io/${{ github.repository }}-go:${{ steps.naming.outputs.DOCKER_TAG }}
+            ${{ steps.naming.outputs.DOCKER_TAG_LATEST == 'true' && format('penguincloud/{0}:latest', env.APP_NAME) || '' }}
+            ${{ steps.naming.outputs.DOCKER_TAG_LATEST == 'true' && format('ghcr.io/{0}-go:latest', github.repository) || '' }}
           labels: |
             org.opencontainers.image.title=Squawk DNS Client (Go)
-            org.opencontainers.image.description=High-performance DNS-over-HTTPS client with mTLS support
-            org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
+            org.opencontainers.image.description=High-performance DNS-over-HTTPS client
+            org.opencontainers.image.version=${{ steps.naming.outputs.VERSION }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
 
-  # Notification job
+      # Create GitHub Release (only for main branch releases)
+      - name: Extract Release Notes
+        if: steps.naming.outputs.IS_RELEASE == 'true' && (steps.tag_check.outputs.EXISTS == 'false' || steps.tag_check.outputs.EXISTS == '')
+        run: |
+          chmod +x .github/scripts/extract-release-notes.sh
+          GITHUB_REPOSITORY="${{ github.repository }}" \
+          GITHUB_SHA="${{ github.sha }}" \
+          .github/scripts/extract-release-notes.sh client "${{ steps.naming.outputs.VERSION }}" release_body.md
+      
+      - name: Create Release
+        if: steps.naming.outputs.IS_RELEASE == 'true' && (steps.tag_check.outputs.EXISTS == 'false' || steps.tag_check.outputs.EXISTS == '')
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.naming.outputs.RELEASE_TAG }}
+          release_name: Squawk DNS Client (Go) v${{ steps.naming.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          body_path: release_body.md
+
+      # Upload release assets
+      - name: Upload Release Assets
+        if: steps.naming.outputs.IS_RELEASE == 'true' && (steps.tag_check.outputs.EXISTS == 'false' || steps.tag_check.outputs.EXISTS == '') && steps.create_release.outputs.upload_url
+        working-directory: dns-client-go/build/packages
+        run: |
+          for file in *.tar.gz *.zip SHA256SUMS; do
+            if [ -f "$file" ]; then
+              echo "Uploading $file..."
+              curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                   -H "Content-Type: application/octet-stream" \
+                   --data-binary @"$file" \
+                   "${{ steps.create_release.outputs.upload_url }}?name=$file"
+            fi
+          done
+
+  # Summary
   notify:
-    name: Notify Release
+    name: Build Summary
     runs-on: ubuntu-latest
     needs: build-and-release
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event_name == 'push'
     steps:
-      - name: Go Client Release Summary
+      - name: Build Summary
         run: |
-          echo "✅ Squawk DNS Client (Go) Release Complete!"
-          echo "Version: $(cat .version)"
-          echo "Platforms: Linux (amd64, arm64), macOS (universal, amd64, arm64), Windows (amd64)"
-          echo "Packages: Native binaries, Debian packages, Docker multi-arch image"
-          echo "Features: DoH, mTLS, DNS forwarding, YAML config, environment variables"
-          echo "Performance: ~10ms cold start, ~15MB memory, single binary"
-          echo "Docker: penguincloud/squawk-dns-client and ghcr.io
+          echo "✅ Squawk DNS Client (Go) Build Complete!"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Binary: ${{ needs.build-and-release.outputs.binary-name || 'squawk/squawk-beta' }}"
+          echo "Platforms: Linux (amd64, arm64), macOS (amd64, arm64), Windows (amd64)"
+          echo "Docker: penguincloud/squawk-dns-client:${{ github.ref_name }} and ghcr.io"

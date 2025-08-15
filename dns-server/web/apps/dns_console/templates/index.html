@@ -1,5 +1,46 @@
 [[extend 'layout.html']]
 
+[[if license_info:]]
+<div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 2rem;">
+    <div class="card-header">
+        <h2 class="card-title" style="color: white;">
+            <i class="fas fa-crown"></i> Premium License Status
+        </h2>
+    </div>
+    <div style="padding: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div>
+                <strong>License Key:</strong><br>
+                <code style="background: rgba(255,255,255,0.2); padding: 0.25rem; border-radius: 4px;">
+                    [[=license_info.get('license_key', 'N/A')[:20]]]...
+                </code>
+            </div>
+            <div>
+                <strong>Expires:</strong><br>
+                [[=license_info.get('expires_at', 'N/A')]]
+            </div>
+            <div>
+                <strong>Tokens Used:</strong><br>
+                [[=license_info.get('tokens_used', 0)]] / [[=license_info.get('max_tokens', 100)]]
+            </div>
+            <div>
+                <strong>Status:</strong><br>
+                [[if license_info.get('valid'):]]
+                <span class="badge badge-success">Active</span>
+                [[else:]]
+                <span class="badge badge-danger">Expired</span>
+                [[pass]]
+            </div>
+        </div>
+        <div style="margin-top: 1rem;">
+            <a href="[[=URL('license/portal')]]" class="btn btn-light">
+                <i class="fas fa-user-circle"></i> Manage License
+            </a>
+        </div>
+    </div>
+</div>
+[[pass]]
+
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-value">[[=token_count]]</div>

@@ -11,7 +11,7 @@ export default function Enterprise() {
             <div className="col-lg-6">
               <div className="mb-3">
                 <span className="badge bg-light text-primary fs-6 px-3 py-2">
-                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Cloud Solution
+                  <i className="fas fa-shield-alt me-2"></i>Squawk DNS, a Penguin Technologies Solution
                 </span>
               </div>
               <h1 className="display-4 fw-bold mb-4">Enterprise DNS Security</h1>
@@ -108,7 +108,7 @@ export default function Enterprise() {
             </div>
           </div>
 
-          <div className="row g-4">
+          <div className="row g-4 mb-4">
             <div className="col-lg-6">
               <div className="feature-card p-4 bg-light rounded h-100">
                 <div className="d-flex align-items-start">
@@ -119,11 +119,12 @@ export default function Enterprise() {
                     <h4>Monitoring & Analytics</h4>
                     <p className="text-muted mb-3">Comprehensive monitoring with real-time dashboards and enterprise reporting.</p>
                     <ul className="list-unstyled">
-                      <li><i className="fas fa-check text-success me-2"></i>Real-time performance metrics</li>
-                      <li><i className="fas fa-check text-success me-2"></i>Grafana dashboard integration</li>
-                      <li><i className="fas fa-check text-success me-2"></i>Prometheus metrics export</li>
-                      <li><i className="fas fa-check text-success me-2"></i>SNMP monitoring support</li>
-                      <li><i className="fas fa-check text-success me-2"></i>Custom alerting rules</li>
+                      <li><i className="fas fa-check text-success me-2"></i>DNS performance monitoring with detailed timing analytics</li>
+                      <li><i className="fas fa-check text-success me-2"></i>Real-time performance metrics and response time tracking</li>
+                      <li><i className="fas fa-check text-success me-2"></i>Client-side performance statistics and jitter analysis</li>
+                      <li><i className="fas fa-check text-success me-2"></i>Grafana dashboard integration with custom visualizations</li>
+                      <li><i className="fas fa-check text-success me-2"></i>Prometheus metrics export for infrastructure monitoring</li>
+                      <li><i className="fas fa-check text-success me-2"></i>SNMP monitoring support and custom alerting rules</li>
                     </ul>
                   </div>
                 </div>
@@ -146,6 +147,48 @@ export default function Enterprise() {
                       <li><i className="fas fa-check text-success me-2"></i>REST API for automation</li>
                       <li><i className="fas fa-check text-success me-2"></i>Group policy integration</li>
                     </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* DNS Performance Monitoring Feature Highlight */}
+          <div className="row">
+            <div className="col-lg-12">
+              <div className="feature-highlight p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-primary rounded">
+                <div className="row align-items-center">
+                  <div className="col-lg-2 text-center">
+                    <div className="feature-icon bg-primary text-white rounded-circle p-4 mx-auto d-inline-block">
+                      <i className="fas fa-tachometer-alt fa-3x"></i>
+                    </div>
+                  </div>
+                  <div className="col-lg-10">
+                    <h3 className="text-primary fw-bold mb-3">DNS Performance Monitoring</h3>
+                    <p className="text-muted mb-3">
+                      Advanced DNS-over-HTTPS performance monitoring provides detailed insights into your DNS infrastructure. 
+                      Go clients automatically monitor connection performance with randomized testing intervals and comprehensive metrics collection.
+                    </p>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <h6 className="fw-bold text-dark">Detailed Performance Metrics:</h6>
+                        <ul className="list-unstyled small">
+                          <li><i className="fas fa-stopwatch text-success me-2"></i>DNS lookup timing (resolution performance)</li>
+                          <li><i className="fas fa-handshake text-success me-2"></i>TCP connection and TLS handshake analysis</li>
+                          <li><i className="fas fa-server text-success me-2"></i>Server processing time measurement</li>
+                          <li><i className="fas fa-download text-success me-2"></i>Content transfer and response size tracking</li>
+                        </ul>
+                      </div>
+                      <div className="col-md-6">
+                        <h6 className="fw-bold text-dark">Smart Monitoring Features:</h6>
+                        <ul className="list-unstyled small">
+                          <li><i className="fas fa-random text-success me-2"></i>Randomized test intervals (5-10 minutes)</li>
+                          <li><i className="fas fa-chart-bar text-success me-2"></i>Baseline performance tracking and jitter detection</li>
+                          <li><i className="fas fa-bell text-success me-2"></i>Automatic performance alerts and threshold monitoring</li>
+                          <li><i className="fas fa-database text-success me-2"></i>Centralized performance data collection and analysis</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
